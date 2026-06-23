@@ -1,0 +1,108 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CLIENT
+  FREELANCER
+}
+
+enum GigStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum OrderStatus {
+  PENDING_ESCROW
+  ESCROW_HELD
+  IN_PROGRESS
+  UNDER_REVIEW
+  COMPLETED
+  REFUNDED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  ESCROW_LOCK
+  ESCROW_RELEASE
+}
+
+model User {
+  id               String        @id @default(uuid()) @db.Uuid
+  firebaseId       String        @unique
+  email            String        @unique
+  name             String
+  role             Role
+  balance          Decimal       @default(0.00) @db.Decimal(12, 2)
+  createdAt        DateTime      @default(now())
+  
+  gigs             Gig[]         @relation("FreelancerGigs")
+  jobRequests      JobRequest[]  @relation("ClientJobRequests")
+  clientOrders     Order[]       @relation("ClientOrders")
+  freelancerOrders Order[]       @relation("FreelancerOrders")
+  transactions     Transaction[] @relation("UserTransactions")
+}
+
+model Gig {
+  id            String      @id @default(uuid()) @db.Uuid
+  title         String
+  description   String
+  category      String      @default("Programming & IT")
+  basePrice     Decimal     @db.Decimal(12, 2)
+  deliveryDays  Int
+  status        GigStatus   @default(ACTIVE)
+  freelancerId  String      @db.Uuid
+  
+  freelancer    User        @relation("FreelancerGigs", fields: [freelancerId], references: [id], onDelete: Cascade)
+  orders        Order[]     @relation("GigOrders")
+}
+
+model JobRequest {
+  id          String      @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  category    String      @default("Programming & IT")
+  budget      Decimal     @db.Decimal(12, 2)
+  clientId    String      @db.Uuid
+  createdAt   DateTime    @default(now())
+  
+  client      User        @relation("ClientJobRequests", fields: [clientId], references: [id], onDelete: Cascade)
+  orders      Order[]     @relation("JobRequestOrders")
+}
+
+model Order {
+  id                    String       @id @default(uuid()) @db.Uuid
+  gigId                 String?      @db.Uuid
+  jobRequestId          String?      @db.Uuid
+  clientId              String       @db.Uuid
+  freelancerId          String       @db.Uuid
+  amount                Decimal      @db.Decimal(12, 2)
+  status                OrderStatus  @default(PENDING_ESCROW)
+  stripePaymentIntentId String?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  
+  gig                   Gig?         @relation("GigOrders", fields: [gigId], references: [id], onDelete: SetNull)
+  jobRequest            JobRequest?  @relation("JobRequestOrders", fields: [jobRequestId], references: [id], onDelete: SetNull)
+  client                User         @relation("ClientOrders", fields: [clientId], references: [id], onDelete: Cascade)
+  freelancer            User         @relation("FreelancerOrders", fields: [freelancerId], references: [id], onDelete: Cascade)
+  transactions          Transaction[] @relation("OrderTransactions")
+}
+
+model Transaction {
+  id        String          @id @default(uuid()) @db.Uuid
+  userId    String          @db.Uuid
+  amount    Decimal         @db.Decimal(12, 2)
+  type      TransactionType
+  orderId   String?         @db.Uuid
+  createdAt DateTime        @default(now())
+  
+  user      User            @relation("UserTransactions", fields: [userId], references: [id], onDelete: Cascade)
+  order     Order?          @relation("OrderTransactions", fields: [orderId], references: [id], onDelete: SetNull)
+}

@@ -1,27 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { useAuth } from '../context/AuthContext';
 import { GigCard } from '../components/GigCard';
-import { Search, Briefcase, PlusCircle } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Search, SlidersHorizontal, ChevronDown, PlusCircle, X } from 'lucide-react';
 
 export const ClientMarketplace: React.FC = () => {
-  const { filteredGigs, setSearchQuery, selectedCategory, setSelectedCategory, addShoutout } = useMarketplace();
+  const { filteredGigs, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, addShoutout, gigs } = useMarketplace();
   const { currentUser } = useAuth();
 
-  // Modal and form states
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [isCatOpen, setIsCatOpen] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [shoutoutTitle, setShoutoutTitle] = useState('');
-  const [shoutoutDesc, setShoutoutDesc]   = useState('');
+  const [shoutoutDesc, setShoutoutDesc] = useState('');
   const [shoutoutBudget, setShoutoutBudget] = useState(100);
-  const [shoutoutTime, setShoutoutTime]   = useState(3);
-  const [shoutoutCat, setShoutoutCat]     = useState<'Graphics & Design' | 'Programming & IT' | 'Writing & Translation' | 'Video & Animation'>('Programming & IT');
+  const [shoutoutTime, setShoutoutTime] = useState(3);
+  const [shoutoutCat, setShoutoutCat] = useState<'Graphics & Design' | 'Programming & IT' | 'Writing & Translation' | 'Video & Animation'>('Programming & IT');
+  const catRef = useRef<HTMLDivElement>(null);
 
-  // If not logged in or not a client (or admin/testing), you could redirect. 
-  // For the sandbox, we'll allow viewing but preferably this is for clients.
-  if (!currentUser) {
-    return <Navigate to="/join" replace />;
-  }
+  const categories = ['Graphics & Design', 'Programming & IT', 'Writing & Translation', 'Video & Animation'];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) {
+        setIsCatOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchQuery(localSearch);
+  };
 
   const handlePostShoutout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,109 +47,148 @@ export const ClientMarketplace: React.FC = () => {
     setShowPostModal(false);
   };
 
-  const categories = ["Graphics & Design", "Programming & IT", "Writing & Translation", "Video & Animation"];
-
   return (
-    <div className="flex-1 bg-slate-50 min-h-screen pt-8 pb-16">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Marketplace Section Header */}
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm mb-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-          {/* Decorative background element */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="flex-1 bg-gray-50 min-h-screen">
 
-          <div className="relative z-10 space-y-2 flex-1">
-            <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-xs mb-2">
-              <Briefcase className="w-5 h-5" /> Client Workspace
+      {/* ── HERO BANNER ─────────────────────────────────────────────── */}
+      <div className="bg-[#0d4f47] px-6 py-10">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-white mb-1">Browse Services</h1>
+          <p className="text-white/70 text-sm mb-6">Find skilled professionals across Kazify</p>
+
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="flex items-center bg-white rounded-lg overflow-hidden shadow-md max-w-3xl">
+            <div className="pl-4 text-slate-400 flex-shrink-0">
+              <Search className="w-5 h-5" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black font-display text-slate-900 tracking-tight">
-              {selectedCategory ? `${selectedCategory} Services` : 'Discover Top Freelance Talent'}
-            </h1>
-            <p className="text-slate-500 text-lg max-w-2xl">
-              Browse vetted professional services. Hire securely with escrow protection and zero risk.
-            </p>
-          </div>
-
-          <div className="relative z-10 w-full md:w-auto shrink-0 flex items-center gap-4">
-             {selectedCategory && (
-                <button
-                  onClick={() => setSelectedCategory(null)}
-                  className="text-sm text-slate-500 hover:text-slate-800 font-bold transition"
-                >
-                  Clear Filters
-                </button>
-             )}
-             {currentUser?.role === 'client' && (
-                <button
-                  onClick={() => setShowPostModal(true)}
-                  className="w-full sm:w-auto bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-primary-500/20 text-sm"
-                >
-                  <PlusCircle className="w-5 h-5" />
-                  <span>Post Job Request</span>
-                </button>
-             )}
-          </div>
-        </div>
-
-        {/* Categories Bar */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-8 custom-scrollbar">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition whitespace-nowrap ${
-              selectedCategory === null
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            All Services
-          </button>
-          {categories.map((cat) => (
+            <input
+              type="text"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              placeholder="What service are you looking for?"
+              className="flex-1 px-4 py-3.5 text-slate-800 placeholder-slate-400 text-sm focus:outline-none bg-transparent"
+            />
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition whitespace-nowrap ${
-                selectedCategory === cat
-                  ? 'bg-primary-500 text-white shadow-md shadow-primary-500/20'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
+              type="submit"
+              className="bg-[#0d4f47] hover:bg-[#0a3d37] text-white font-semibold px-8 py-3.5 text-sm transition"
             >
-              {cat}
+              Search
             </button>
-          ))}
+          </form>
         </div>
+      </div>
 
-        {/* Gigs Grid */}
-        <div>
-          {filteredGigs.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredGigs.map((gig) => (
-                <GigCard key={gig.id} gig={gig} />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm">
-              <Search className="w-16 h-16 text-slate-300 mx-auto mb-6" />
-              <h3 className="text-xl font-bold text-slate-800">No services match your request</h3>
-              <p className="text-slate-500 mt-2 max-w-md mx-auto">
-                Try adjusting your search terms or clearing the selected category filter to see more results.
-              </p>
+      {/* ── FILTER BAR ──────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            {/* Category Dropdown */}
+            <div className="relative" ref={catRef}>
               <button
-                onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-                className="mt-6 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition shadow-lg"
+                onClick={() => setIsCatOpen(!isCatOpen)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-slate-700 hover:bg-gray-50 transition"
               >
-                Reset Search & Filters
+                <SlidersHorizontal className="w-4 h-4 text-slate-500" />
+                {selectedCategory || 'Category'}
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isCatOpen ? 'rotate-180' : ''}`} />
               </button>
-            </div>
-          )}
-        </div>
-      </main>
 
-      {/* Post Shoutout Modal Form Drawer */}
+              {isCatOpen && (
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1">
+                  <button
+                    onClick={() => { setSelectedCategory(null); setIsCatOpen(false); }}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition ${!selectedCategory ? 'text-[#0d4f47] font-semibold bg-teal-50' : 'text-slate-700 hover:bg-gray-50'}`}
+                  >
+                    All Categories
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => { setSelectedCategory(cat); setIsCatOpen(false); }}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition ${selectedCategory === cat ? 'text-[#0d4f47] font-semibold bg-teal-50' : 'text-slate-700 hover:bg-gray-50'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Active filter pill */}
+            {selectedCategory && (
+              <span className="inline-flex items-center gap-1.5 bg-teal-50 text-[#0d4f47] border border-teal-200 text-xs font-semibold px-3 py-1.5 rounded-full">
+                {selectedCategory}
+                <button onClick={() => setSelectedCategory(null)}>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+            {searchQuery && (
+              <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-1.5 rounded-full">
+                "{searchQuery}"
+                <button onClick={() => { setSearchQuery(''); setLocalSearch(''); }}>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-500 font-medium">
+              {filteredGigs.length} service{filteredGigs.length !== 1 ? 's' : ''}
+            </span>
+            {currentUser?.role === 'client' && (
+              <button
+                onClick={() => setShowPostModal(true)}
+                className="flex items-center gap-1.5 bg-[#0d4f47] hover:bg-[#0a3d37] text-white text-sm font-semibold px-4 py-2 rounded-md transition"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Post Job
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── GIGS GRID ───────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {filteredGigs.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filteredGigs.map((gig) => (
+              <GigCard key={gig.id} gig={gig} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-24">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-9 h-9 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">No services found</h3>
+            <p className="text-slate-500 text-sm max-w-md mx-auto mb-6">
+              Try adjusting your search or clearing the category filter to see more results.
+            </p>
+            <button
+              onClick={() => { setSearchQuery(''); setLocalSearch(''); setSelectedCategory(null); }}
+              className="px-6 py-2.5 bg-[#0d4f47] hover:bg-[#0a3d37] text-white font-semibold rounded-lg text-sm transition"
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── POST JOB MODAL ──────────────────────────────────────────── */}
       {showPostModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 relative">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Post a Job Shoutout</h3>
-            <p className="text-xs text-slate-500 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-6 relative">
+            <button
+              onClick={() => setShowPostModal(false)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Post a Job Request</h3>
+            <p className="text-xs text-slate-500 mb-5">
               Describe your task, set the maximum budget, and watch freelancers submit bids.
             </p>
 
@@ -149,10 +201,9 @@ export const ClientMarketplace: React.FC = () => {
                   placeholder="e.g. Next.js dashboard styling fixes"
                   value={shoutoutTitle}
                   onChange={(e) => setShoutoutTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Job Description</label>
                 <textarea
@@ -161,10 +212,9 @@ export const ClientMarketplace: React.FC = () => {
                   placeholder="Detail the scope of work, technologies used, and expectations..."
                   value={shoutoutDesc}
                   onChange={(e) => setShoutoutDesc(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Budget (UGX)</label>
@@ -174,28 +224,27 @@ export const ClientMarketplace: React.FC = () => {
                     required
                     value={shoutoutBudget}
                     onChange={(e) => setShoutoutBudget(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Delivery Time (Days)</label>
+                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Delivery (Days)</label>
                   <input
                     type="number"
                     min="1"
                     required
                     value={shoutoutTime}
                     onChange={(e) => setShoutoutTime(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Category</label>
                 <select
                   value={shoutoutCat}
                   onChange={(e) => setShoutoutCat(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="Graphics & Design">Graphics & Design</option>
                   <option value="Programming & IT">Programming & IT</option>
@@ -203,18 +252,17 @@ export const ClientMarketplace: React.FC = () => {
                   <option value="Video & Animation">Video & Animation</option>
                 </select>
               </div>
-
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowPostModal(false)}
-                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition"
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold rounded-xl transition shadow-lg shadow-primary-500/20"
+                  className="flex-1 py-2.5 bg-[#0d4f47] hover:bg-[#0a3d37] text-white text-sm font-bold rounded-lg transition"
                 >
                   Post Request
                 </button>

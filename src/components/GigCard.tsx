@@ -8,90 +8,74 @@ interface GigCardProps {
   gig: Gig;
 }
 
+// Map categories to distinct colours
+const categoryColors: Record<string, string> = {
+  'Graphics & Design':      'bg-purple-600',
+  'Programming & IT':       'bg-blue-600',
+  'Writing & Translation':  'bg-orange-500',
+  'Video & Animation':      'bg-rose-600',
+};
+
 export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
   const { allUsers } = useAuth();
-  // Find the freelancer profile associated with the gig
   const freelancer = allUsers.find(u => u.id === gig.freelancerId);
+  const badgeColor = categoryColors[gig.category] || 'bg-teal-600';
 
   return (
-    <Link to={`/gig/${gig.id}`} className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden hover:-translate-y-1 block">
-      {/* Gig Image Header */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+    <Link
+      to={`/gig/${gig.id}`}
+      className="group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden"
+    >
+      {/* Image with category badge overlay */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
         <img
           src={gig.image}
           alt={gig.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
-        {/* Badges */}
-        {gig.badges && gig.badges.length > 0 && (
-          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-            {gig.badges.map((badge, idx) => (
-              <span
-                key={idx}
-                className="bg-slate-900/85 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider"
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Category badge - top left overlay */}
+        <span className={`absolute top-3 left-3 ${badgeColor} text-white text-[10px] font-bold px-2.5 py-1 rounded-md z-10 shadow`}>
+          {gig.category}
+        </span>
       </div>
 
       {/* Card Body */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
-        <div>
-          {/* Freelancer Profile Header */}
-          <div className="flex items-center gap-2 mb-3">
-            {freelancer ? (
-              <>
-                <img
-                  src={freelancer.avatar}
-                  alt={freelancer.name}
-                  className="w-6 h-6 rounded-full object-cover border border-slate-100"
-                />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-slate-800 line-clamp-1">
-                    {freelancer.name}
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-medium leading-none">
-                    {freelancer.country}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center gap-1.5 text-slate-400">
-                <ShieldAlert className="w-3.5 h-3.5" />
-                <span className="text-xs">Unknown Provider</span>
-              </div>
-            )}
-          </div>
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Title */}
+        <h4 className="text-sm font-semibold text-slate-900 group-hover:text-primary-600 line-clamp-2 leading-snug mb-3 transition-colors">
+          {gig.title}
+        </h4>
 
-          {/* Title */}
-          <h4 className="text-sm font-semibold text-slate-800 group-hover:text-primary-600 line-clamp-2 leading-snug mb-2 transition-colors">
-            {gig.title}
-          </h4>
+        <div className="mt-auto pt-3 border-t border-gray-50 flex items-center gap-2">
+          {/* Freelancer avatar + name */}
+          {freelancer ? (
+            <>
+              <img
+                src={freelancer.avatar}
+                alt={freelancer.name}
+                className="w-7 h-7 rounded-full object-cover border border-slate-100 flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-slate-800 truncate">{freelancer.name}</p>
+                <p className="text-[10px] text-slate-400 truncate">{gig.category}</p>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-1.5 text-slate-400 flex-1">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span className="text-xs">Unknown Provider</span>
+            </div>
+          )}
 
           {/* Rating */}
-          <div className="flex items-center gap-1.5 mb-4 text-xs font-semibold">
-            <div className="flex items-center gap-0.5 text-amber-500">
-              <Star className="w-3.5 h-3.5 fill-current" />
-              <span>{gig.rating.toFixed(1)}</span>
-            </div>
-            <span className="text-slate-400 font-normal">({gig.reviewsCount} reviews)</span>
+          <div className="flex items-center gap-1 text-xs font-semibold ml-auto flex-shrink-0">
+            <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
+            <span className="text-slate-700">{gig.rating.toFixed(1)}</span>
           </div>
-        </div>
-
-        {/* Footer Pricing */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Starting Price
-          </span>
-          <span className="text-base font-extrabold text-slate-800 font-display">
-            UGX {gig.startingPrice}
-          </span>
         </div>
       </div>
     </Link>
   );
 };
+

@@ -68,7 +68,7 @@ const SLIDES = [
 
 export const LandingHome: React.FC = () => {
   const { filteredGigs, shoutouts, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, addShoutout } = useMarketplace();
-  const { currentUser } = useAuth();
+  const { currentUser, allUsers } = useAuth();
   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused]           = useState(false);
@@ -112,505 +112,308 @@ export const LandingHome: React.FC = () => {
 
   return (
     <div className="flex-1 bg-slate-50">
-      {/* ── HERO SLIDESHOW ───────────────────────────────────────────────── */}
-      <section
-        className="relative h-[88vh] min-h-[560px] max-h-[860px] overflow-hidden text-white"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        {/* Slide background images — cross-fade via opacity transition */}
-        {SLIDES.map((s, i) => (
-          <div
-            key={s.id}
-            className="absolute inset-0 transition-opacity duration-[1200ms] ease-in-out"
-            style={{ opacity: i === currentSlide ? 1 : 0 }}
-          >
+            {/* ── HERO SECTION ───────────────────────────────────────────────── */}
+      <section className="relative h-[80vh] min-h-[600px] max-h-[800px] overflow-hidden text-white flex items-center">
+        {/* Background Image Slider */}
+        <div className="absolute inset-0 z-0 bg-black">
+          {[
+            '/slide1.jpg',
+            '/slide2.jpg',
+            '/slide3.jpg',
+            '/slide4.jpg',
+          ].map((bg, index) => (
             <img
-              src={s.bg}
-              alt={s.name}
-              className="absolute inset-0 w-full h-full object-cover object-center"
-              loading={i === 0 ? 'eager' : 'lazy'}
+              key={index}
+              src={bg}
+              alt={`Hero Background ${index + 1}`}
+              className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+                currentSlide % 4 === index ? 'opacity-100' : 'opacity-0'
+              }`}
             />
-            {/* Per-slide directional gradient overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-r ${s.gradient}`} />
-            {/* Bottom fade to blend into content below */}
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-950 to-transparent" />
-          </div>
-        ))}
+          ))}
+          {/* Subtle overlay only on the left for text readability, keeping pictures bright */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+        </div>
 
-        {/* ── Headline + CTA (always visible, left-anchored) ── */}
-        <div className="relative z-10 h-full flex flex-col justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl space-y-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold border border-white/20 backdrop-blur-sm">
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
-              Empowering African Professional Talent
+        {/* Slide Controls (Dots) */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+          {[0, 1, 2, 3].map((idx) => (
+            <button
+              key={idx}
+              onClick={() => goToSlide(idx)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                (currentSlide % 4) === idx ? 'bg-primary-500 w-8' : 'bg-white/40 hover:bg-white/80'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Content Container */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl space-y-6">
+            {/* Top Badge */}
+            <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-black/40 text-white text-sm font-medium border border-white/10 backdrop-blur-md">
+              Kazify's Number-One services marketplace
             </span>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.75rem] font-black font-display tracking-tight leading-[1.08] text-white drop-shadow-lg">
-              Find the right freelance<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-amber-400">
-                service, instantly.
-              </span>
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-tight">
+              Find trusted professionals near you
             </h1>
 
-            <p className="text-white/80 text-base sm:text-lg leading-relaxed max-w-xl">
-              Kazify connects global businesses with vetted African talent. Work securely with escrow protection, fast milestone reviews, and zero risk.
+            {/* Subheadline */}
+            <p className="text-lg sm:text-xl text-white/90">
+              Designers, developers, photographers, tutors & more — all in one place.
             </p>
 
-            <div className="flex flex-wrap gap-3 pt-1">
-              <Link
-                to="/join"
-                className="bg-primary-500 hover:bg-primary-600 text-white font-bold px-6 py-3 rounded-full transition shadow-lg shadow-primary-500/30 flex items-center gap-2 group text-sm"
-              >
-                <span>Hire Top Talent</span>
-                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
-              </Link>
-              <Link
-                to="/join"
-                className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 font-semibold px-6 py-3 rounded-full transition text-sm"
-              >
-                Start Working
-              </Link>
-            </div>
-
-            {/* Popular search tags */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 text-xs">
-              <span className="text-white/50 font-semibold">Popular:</span>
-              {popularTags.map(tag => (
+            {/* Search Bar */}
+            <div className="mt-8">
+              <div className="flex items-center w-full max-w-4xl bg-white rounded-full p-2 shadow-2xl">
+                <div className="pl-4 pr-2 text-slate-400">
+                  <Search className="w-6 h-6" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="What service are you looking for?"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-slate-900 placeholder-slate-400 text-lg focus:outline-none px-2"
+                />
                 <button
-                  key={tag}
-                  onClick={() => handlePopularTagClick(tag)}
-                  className="px-3 py-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 text-white/80 hover:text-white rounded-full transition"
+                  onClick={() => {
+                    const destPath = currentUser 
+                      ? (currentUser.role === 'client' ? '/services' : currentUser.role === 'student' ? '/academy' : '/jobs') 
+                      : '/services';
+                    if (window.location.pathname !== destPath) {
+                      window.location.href = destPath;
+                    }
+                  }}
+                  className="bg-primary-600 hover:bg-primary-700 text-white font-semibold px-8 py-3.5 rounded-full flex items-center gap-2 transition"
                 >
-                  {tag}
+                  Search
+                  <ArrowRight className="w-5 h-5" />
                 </button>
-              ))}
+              </div>
+
+              {/* Category Pills */}
+              <div className="flex flex-wrap gap-3 mt-6">
+                {['Graphics & Design', 'Programming & IT', 'Writing & Translation', 'Video & Animation'].map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => setSearchQuery(tag)}
+                    className="flex items-center gap-2 px-4 py-2 bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white text-sm font-medium rounded-full transition"
+                  >
+                    {tag}
+                    <ArrowRight className="w-4 h-4 text-white/70" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* ── Freelancer Placecard (bottom-right) ── */}
-        <div className="absolute bottom-10 right-6 sm:right-12 z-20">
-          {SLIDES.map((s, i) => (
-            <div
-              key={s.id}
-              className="transition-all duration-700 ease-in-out"
-              style={{
-                opacity: i === currentSlide ? 1 : 0,
-                transform: i === currentSlide ? 'translateY(0)' : 'translateY(16px)',
-                position: i === currentSlide ? 'relative' : 'absolute',
-                pointerEvents: i === currentSlide ? 'auto' : 'none',
-              }}
-            >
-              <div className="glass-dark border border-white/10 rounded-2xl p-4 w-64 shadow-2xl">
-                {/* Top row: avatar + name */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="relative shrink-0">
-                    <img
-                      src={s.avatar}
-                      alt={s.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
-                    />
-                    {/* Accent dot */}
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-slate-900 ${s.accent}`} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-extrabold text-white leading-tight truncate">{s.name}</p>
-                    <p className="text-[11px] text-white/60 flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 shrink-0" />
-                      {s.country}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Role badge */}
-                <span className={`inline-flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full border ${s.badge} mb-2`}>
-                  {s.role}
-                </span>
-
-                {/* Specialty */}
-                <p className="text-[10px] text-white/50 leading-snug mb-3">{s.specialty}</p>
-
-                {/* Rating */}
-                <div className="flex items-center gap-1.5">
-                  <div className="flex">
-                    {[...Array(5)].map((_, ri) => (
-                      <Star
-                        key={ri}
-                        className={`w-3 h-3 ${
-                          ri < Math.floor(s.rating) ? 'text-amber-400 fill-amber-400' : 'text-white/20'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-[11px] font-bold text-white">{s.rating.toFixed(1)}</span>
-                  <span className="text-[10px] text-white/40 font-medium">/ 5.0</span>
-                </div>
+      
+      {/* ── PROFESSIONALS SCROLL ────────────────────────────────────────── */}
+      <section className="w-full bg-white border-b border-gray-100 relative overflow-hidden">
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-24 z-10 bg-gradient-to-l from-white to-transparent"></div>
+        <div className="flex overflow-x-auto scrollbar-hide">
+          {allUsers.filter(u => u.role !== 'student').map((user) => (
+            <div key={user.id} className="min-w-[220px] max-w-[300px] flex-shrink-0 flex items-center gap-3 px-4 py-3 border-r border-gray-100 hover:bg-slate-50 transition cursor-pointer">
+              <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-slate-200" />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-slate-800 line-clamp-1">{user.name}</span>
+                <span className="text-[10px] text-slate-500 line-clamp-1">{user.country || 'Verified Provider'}</span>
               </div>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* ── Prev / Next arrows ── */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/30 hover:bg-black/50 border border-white/15 text-white backdrop-blur-sm transition"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/30 hover:bg-black/50 border border-white/15 text-white backdrop-blur-sm transition"
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-
-        {/* ── Navigation dots ── */}
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-          {SLIDES.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => goToSlide(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`rounded-full transition-all duration-300 ${
-                i === currentSlide
-                  ? `w-6 h-2.5 ${s.dot}`
-                  : 'w-2.5 h-2.5 bg-white/30 hover:bg-white/60'
-              }`}
-            />
+      {/* ── CATEGORIES SCROLL ───────────────────────────────────────────── */}
+      <section className="w-full bg-gray-50 border-b border-gray-100 relative overflow-hidden">
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-24 z-10 bg-gradient-to-l from-gray-50 to-transparent"></div>
+        <div className="flex overflow-x-auto scrollbar-hide">
+          {['Graphics & Design', 'Programming & IT', 'Writing & Translation', 'Video & Animation'].map((cat, idx) => (
+            <div key={idx} className="min-w-[160px] flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 border-r border-gray-100 hover:bg-white transition cursor-pointer" onClick={() => setSearchQuery(cat)}>
+              <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                <span className="text-xs font-bold">{cat.charAt(0)}</span>
+              </div>
+              <span className="text-sm text-slate-700 font-medium whitespace-nowrap">{cat}</span>
+            </div>
           ))}
-        </div>
-
-        {/* Escrow trust badge (bottom-left) */}
-        <div className="absolute bottom-10 left-6 sm:left-12 z-20 hidden sm:flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2">
-          <ShieldCheck className="w-4 h-4 text-primary-400" />
-          <span className="text-xs font-semibold text-white/80">100% Escrow Protected Payments</span>
         </div>
       </section>
 
-      {/* Trusted By Banner */}
-      <div className="bg-white border-b border-slate-200 py-6">
+      {/* ── THIS AFTERNOON'S PICKS ──────────────────────────────────────── */}
+      <section className="bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-6">
-            Trusted by leading enterprises across Africa
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 transition-all duration-500">
-            {/* Absa */}
-            <img src="/absa.png" alt="Absa Bank" className="h-10 object-contain" />
-            
-            {/* Junior Achievement Uganda */}
-            <img
-              src="/ja_uganda_logo.png"
-              alt="Junior Achievement Uganda"
-              className="h-12 w-auto max-w-[180px] object-contain"
-            />
-
-            {/* MTN */}
-            <img src="/mtn.png" alt="MTN" className="h-12 object-contain" />
-            
-            {/* Airtel */}
-            <img src="/airtel.png" alt="Airtel" className="h-10 object-contain" />
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">This afternoon's picks</h2>
+              <p className="mt-1 text-sm font-normal text-gray-500">New services added this afternoon</p>
+            </div>
+            <a href="/services" className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-primary-600">
+              Browse all <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredGigs.slice(0, 4).map(gig => (
+              <GigCard key={gig.id} gig={gig} />
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── BENEFITS SECTION (Why Choose Kazify) ── */}
-      <section className="py-20 bg-slate-50 border-b border-slate-200">
+      {/* ── HOT RIGHT NOW ───────────────────────────────────────────────── */}
+      <section className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <h2 className="text-3xl sm:text-4xl font-black font-display tracking-tight text-slate-900 leading-tight">
-                A whole world of African freelance talent at your fingertips
-              </h2>
-              <ul className="space-y-6">
-                <li className="flex items-start gap-4">
-                  <CheckCircle className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-1">The best for every budget</h4>
-                    <p className="text-slate-600 text-sm">Find high-quality services at every price point. No hourly rates, just project-based pricing.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-4">
-                  <CheckCircle className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-1">Quality work done quickly</h4>
-                    <p className="text-slate-600 text-sm">Find the right freelancer to begin working on your project within minutes.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-4">
-                  <CheckCircle className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-1">Protected payments, every time</h4>
-                    <p className="text-slate-600 text-sm">Always know what you'll pay upfront. Your payment isn't released until you approve the work.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-4">
-                  <CheckCircle className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-1">24/7 support</h4>
-                    <p className="text-slate-600 text-sm">Questions? Our round-the-clock support team is available to help anytime, anywhere.</p>
-                  </div>
-                </li>
-              </ul>
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-primary-600 uppercase tracking-wider flex items-center gap-1">
+                  🔥 Trending
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Hot right now</h2>
+              <p className="mt-1 text-sm font-normal text-gray-500">Most viewed services this afternoon</p>
             </div>
-            
-            {/* Embedded illustration or placeholder representing the community */}
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-square lg:aspect-[4/5] bg-emerald-900">
-              <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=1000" alt="Professional meeting" className="w-full h-full object-cover opacity-90" />
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-900/20 to-transparent"></div>
-              <div className="absolute bottom-8 left-8 right-8">
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl">
-                  <p className="text-white text-lg font-semibold italic">
-                    "Kazify completely transformed how we source talent for our campaigns. The quality and speed are unmatched."
-                  </p>
-                  <div className="mt-4 flex items-center gap-3">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150" className="w-10 h-10 rounded-full object-cover border-2 border-emerald-400" alt="Client" />
+            <a href="/services" className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-primary-600">
+              Browse all <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredGigs.slice(4, 8).map(gig => (
+              <GigCard key={gig.id} gig={gig} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── KAZIFY IN YOUR POCKET ───────────────────────────────────────── */}
+      <section className="bg-[#0d4f47] py-16 px-4 sm:px-6 lg:px-8 overflow-hidden relative">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+
+            {/* Left: Text Content */}
+            <div className="flex-1 text-white">
+              {/* NOW AVAILABLE badge */}
+              <div className="inline-flex items-center gap-2 border border-white/30 rounded-full px-4 py-1.5 mb-6">
+                <span className="text-xs font-semibold text-white/90 tracking-wide uppercase">Now available</span>
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+              </div>
+
+              {/* Headline */}
+              <h2 className="text-4xl sm:text-5xl font-black leading-tight mb-4">
+                Kazify in your pocket.<br />
+                <span className="text-white">Skills, anywhere, anytime.</span>
+              </h2>
+
+              {/* Sub-text */}
+              <p className="text-white/75 text-base leading-relaxed mb-8 max-w-md">
+                Find trusted professionals, send enquiries, and manage your bookings on the go — all from the Kazify app.
+              </p>
+
+              {/* Feature bullets — 2×2 grid */}
+              <div className="grid grid-cols-2 gap-3 mb-10 max-w-md">
+                {[
+                  { icon: '⚡', title: 'Browse & contact', sub: 'providers instantly' },
+                  { icon: '🔔', title: 'Real-time enquiry', sub: 'notifications' },
+                  { icon: '📍', title: 'Find services', sub: 'near you' },
+                  { icon: '🔒', title: 'Safe, direct', sub: 'communication' },
+                ].map((feat, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-white/10 rounded-xl px-4 py-3">
+                    <span className="text-lg mt-0.5 flex-shrink-0">{feat.icon}</span>
                     <div>
-                      <p className="text-sm font-bold text-white">Aisha Kamau</p>
-                      <p className="text-xs text-emerald-200">Marketing Director, Safaricom</p>
+                      <p className="text-white text-xs font-bold leading-tight">{feat.title}</p>
+                      <p className="text-white/70 text-xs">{feat.sub}</p>
                     </div>
                   </div>
-                </div>
+                ))}
+              </div>
+
+              {/* Store Buttons */}
+              <div className="flex flex-wrap gap-4">
+                {/* Google Play */}
+                <a href="#" className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white rounded-xl px-5 py-3 transition">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3.18 23.76c.4.22.85.24 1.27.07l12.04-6.96-2.73-2.73L3.18 23.76zM.56 1.6C.21 2 0 2.6 0 3.33v17.34c0 .73.21 1.33.56 1.73l.09.09 9.71-9.71v-.23L.65 1.51l-.09.09zM21.1 10.27l-2.71-1.57-3.07 3.07 3.07 3.07 2.73-1.57c.78-.45.78-1.55-.02-2z"/>
+                    <path d="M4.45.24L16.49 7.2 13.76 9.93 1.72.24C2.15.07 2.6.09 3 .31L4.45.24z"/>
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-[10px] text-white/60 leading-none mb-0.5">GET IT ON</p>
+                    <p className="text-sm font-bold leading-none">Google Play</p>
+                  </div>
+                </a>
+
+                {/* App Store */}
+                <a href="#" className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white rounded-xl px-5 py-3 transition">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-[10px] text-white/60 leading-none mb-0.5">Download on the</p>
+                    <p className="text-sm font-bold leading-none">App Store</p>
+                  </div>
+                </a>
               </div>
             </div>
+
+            {/* Right: Phone Mockup */}
+            <div className="flex-shrink-0 relative flex items-center justify-center w-full lg:w-auto">
+              <div className="relative">
+                {/* Glow blob behind phone */}
+                <div className="absolute -inset-12 bg-white/5 blur-3xl rounded-full pointer-events-none" />
+                <img
+                  src="/phone_mockup.png"
+                  alt="Kazify App Preview"
+                  className="relative z-10 w-64 sm:w-72 drop-shadow-2xl"
+                />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* ── CATEGORIES GRID ── */}
-      <section className="py-20 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black font-display tracking-tight text-slate-900 mb-12">
-            Explore the Marketplace
-          </h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {/* Programming */}
-            <button
-              onClick={() => setSelectedCategory('Programming')}
-              className="group relative h-52 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&q=80&w=800"
-                alt="Programming"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/30 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-                <h3 className="text-white font-extrabold text-base mb-0.5">Programming</h3>
-                <p className="text-emerald-300 text-xs font-semibold">Software & Tech</p>
-              </div>
-            </button>
-
-            {/* Design */}
-            <button
-              onClick={() => setSelectedCategory('Design')}
-              className="group relative h-52 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=800"
-                alt="Design"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-900/85 via-purple-900/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-                <h3 className="text-white font-extrabold text-base mb-0.5">Design</h3>
-                <p className="text-purple-300 text-xs font-semibold">Graphics & UI/UX</p>
-              </div>
-            </button>
-
-            {/* Marketing */}
-            <button
-              onClick={() => setSelectedCategory('Marketing')}
-              className="group relative h-52 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?auto=format&fit=crop&q=80&w=800"
-                alt="Marketing"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-amber-900/85 via-amber-900/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-                <h3 className="text-white font-extrabold text-base mb-0.5">Marketing</h3>
-                <p className="text-amber-300 text-xs font-semibold">Digital & Social</p>
-              </div>
-            </button>
-
-            {/* Video */}
-            <button
-              onClick={() => setSelectedCategory('Video')}
-              className="group relative h-52 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&q=80&w=800"
-                alt="Video & Audio"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/85 via-blue-900/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-                <h3 className="text-white font-extrabold text-base mb-0.5">Video & Audio</h3>
-                <p className="text-blue-300 text-xs font-semibold">Animation & Editing</p>
-              </div>
-            </button>
-          </div>
+      {/* ── FROM SEARCH TO DONE ─────────────────────────────────────────── */}
+      <section className="bg-white py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <p className="text-xs font-bold tracking-[0.15em] text-primary-600 uppercase mb-3">HOW IT WORKS</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">From search to done</h2>
         </div>
-      </section>
-
-      {/* Main Content Layout */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
-        {/* Marketplace Section Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-black font-display text-slate-900 tracking-tight">
-              {selectedCategory ? `${selectedCategory} Services` : 'Explore Creative & Tech Services'}
-            </h2>
-            <p className="text-sm text-slate-500 mt-1">
-              {searchQuery ? `Showing results for "${searchQuery}"` : 'Browse high-quality gigs delivered by vetted professionals.'}
-            </p>
-          </div>
-
-          {/* Filter Clean state helper */}
-          {selectedCategory && (
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="text-xs text-primary-600 hover:text-primary-700 font-bold underline"
-            >
-              Clear Category Filter
-            </button>
-          )}
-        </div>
-
-        {/* Categories Bar */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-8 custom-scrollbar">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
-              selectedCategory === null
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            All Fields
-          </button>
-          {["Graphics & Design", "Programming & IT", "Writing & Translation", "Video & Animation"].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
-                selectedCategory === cat
-                  ? 'bg-primary-500 text-white shadow-sm'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              {cat}
-            </button>
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          {[
+            { title: 'Discover', desc: 'Browse services or search providers near you.', icon: '🔍' },
+            { title: 'Request', desc: 'Message the provider or request a booking.', icon: '💬' },
+            { title: 'Pay securely', desc: 'Pay safely. Funds are held until the job is done.', icon: '🛡️' },
+            { title: 'Confirm', desc: 'Mark the work complete and the provider gets paid.', icon: '✅' }
+          ].map((step, idx) => (
+            <div key={idx} className="text-center flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-2xl mb-4 shadow-sm">
+                {step.icon}
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">{step.title}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+            </div>
           ))}
         </div>
+      </section>
 
-
-
-        {/* Grid split: Left Column: Gigs (2/3 width) | Right Column: Shoutout Board (1/3 width) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Left Column: Gigs Grid */}
-          <div className="lg:col-span-8 space-y-6">
-            {filteredGigs.length > 0 ? (
-              selectedCategory || searchQuery ? (
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {filteredGigs.map((gig) => (
-                    <GigCard key={gig.id} gig={gig} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-12">
-                  {["Graphics & Design", "Programming & IT", "Writing & Translation", "Video & Animation"].map((cat) => {
-                    const catGigs = filteredGigs.filter(g => g.category === cat);
-                    if (catGigs.length === 0) return null;
-                    return (
-                      <div key={cat} className="space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                          <h3 className="text-xl font-bold font-display text-slate-900">{cat}</h3>
-                          <button
-                            onClick={() => setSelectedCategory(cat)}
-                            className="text-sm font-bold text-primary-600 hover:text-primary-700 flex items-center gap-1 group transition"
-                          >
-                            View All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </button>
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-6">
-                          {catGigs.slice(0, 4).map((gig) => (
-                            <GigCard key={gig.id} gig={gig} />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )
-            ) : (
-              <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
-                <Search className="w-12 h-12 text-slate-350 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-slate-800">No services match your request</h3>
-                <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
-                  Try clearing your search query or choosing another category from the filters above.
-                </p>
-                <button
-                  onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-                  className="mt-4 px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition"
-                >
-                  Reset Filter Search
-                </button>
-              </div>
-            )}
+      {/* ── ARE YOU A PROFESSIONAL ──────────────────────────────────────── */}
+      <section className="bg-primary-900 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto bg-primary-800/50 border border-primary-700/50 rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-sm shadow-xl">
+          <div className="text-center md:text-left">
+            <h2 className="text-3xl font-bold text-white mb-2">Are you a <span className="text-primary-300">professional?</span></h2>
+            <p className="text-white/70 text-lg mb-6 max-w-md">Join Kazify and start connecting with clients today. Post unlimited services and get paid securely.</p>
           </div>
-
-          {/* Right Column: Shoutout Offers / Job Request Feed */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-emerald-950 text-white rounded-2xl p-5 shadow-lg border border-emerald-900">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <h3 className="text-md font-bold font-display tracking-tight flex items-center gap-1.5">
-                  <Zap className="w-4 h-4 text-secondary-400" />
-                  Shoutouts Feed
-                </h3>
-                
-                {currentUser?.role === 'client' ? (
-                  <button
-                    onClick={() => setShowPostModal(true)}
-                    className="text-xs bg-primary-500 hover:bg-primary-600 text-white font-bold py-1 px-2.5 rounded-lg flex items-center gap-1 transition"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5" />
-                    <span>Post Request</span>
-                  </button>
-                ) : (
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                    Open Job Requests
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed mb-1">
-                Clients post instant job requests. Freelancers can submit bids directly on the cards below.
-              </p>
-            </div>
-
-            {/* Job Board Feed list */}
-            <div className="space-y-4">
-              {shoutouts.length > 0 ? (
-                shoutouts.map((shoutout) => (
-                  <ShoutoutCard key={shoutout.id} shoutout={shoutout} />
-                ))
-              ) : (
-                <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center shadow-sm">
-                  <p className="text-sm text-slate-400">No active job requests available.</p>
-                </div>
-              )}
-            </div>
+          <div className="flex-shrink-0">
+            <button className="bg-white text-primary-900 font-bold px-8 py-4 rounded-xl shadow-lg hover:bg-slate-50 transition transform hover:scale-105 flex items-center gap-2">
+              Join as a provider <ArrowRight className="w-5 h-5" />
+            </button>
           </div>
-
         </div>
-      </main>
+      </section>
 
       {/* ── STUDENT MODE: ACADEMY HERO ── */}
       <section className="relative bg-slate-50 py-24 overflow-hidden border-y border-slate-200">

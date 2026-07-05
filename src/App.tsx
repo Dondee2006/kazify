@@ -16,6 +16,7 @@ import { FreelancerJobs } from './pages/FreelancerJobs';
 import { StudentMarketing } from './pages/StudentMarketing';
 import { AuthCallback } from './pages/AuthCallback';
 import { Inbox } from './pages/Inbox';
+import { ProvidersPage } from './pages/ProvidersPage';
 import { HelpCircle, ShieldCheck, Heart } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -45,6 +46,7 @@ const App: React.FC = () => {
                     <Route path="/jobs" element={<FreelancerJobs />} />
                     <Route path="/student-mode" element={<StudentMarketing />} />
                     <Route path="/inbox" element={<Inbox />} />
+                    <Route path="/providers" element={<ProvidersPage />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                   </Routes>
                 </div>

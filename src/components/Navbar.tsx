@@ -148,7 +148,7 @@ export const Navbar: React.FC = () => {
                 Sign in
               </Link>
               <Link
-                to="/join"
+                to="/signup"
                 className="bg-[#0f766e] hover:bg-[#115e59] text-white font-semibold text-sm px-6 py-2.5 rounded-full transition duration-200 shadow-sm"
               >
                 Join free

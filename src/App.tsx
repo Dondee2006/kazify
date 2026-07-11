@@ -12,6 +12,7 @@ import { Join } from './pages/Join';
 import { Onboarding } from './pages/Onboarding';
 import { AcademyDashboard } from './pages/AcademyDashboard';
 import { ClientMarketplace } from './pages/ClientMarketplace';
+import { Signup } from './pages/Signup';
 import { FreelancerJobs } from './pages/FreelancerJobs';
 import { StudentMarketing } from './pages/StudentMarketing';
 import { AuthCallback } from './pages/AuthCallback';
@@ -43,6 +44,7 @@ const App: React.FC = () => {
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/academy" element={<AcademyDashboard />} />
                     <Route path="/services" element={<ClientMarketplace />} />
+                    <Route path="/signup" element={<Signup />} />
                     <Route path="/jobs" element={<FreelancerJobs />} />
                     <Route path="/student-mode" element={<StudentMarketing />} />
                     <Route path="/inbox" element={<Inbox />} />

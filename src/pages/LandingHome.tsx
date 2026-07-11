@@ -117,16 +117,16 @@ export const LandingHome: React.FC = () => {
         {/* Background Image Slider */}
         <div className="absolute inset-0 z-0 bg-black">
           {[
+            '/pexels-kindelmedia-8487341.jpg',
+            '/pexels-pexels-by-ardarh-664883754-33653240.jpg',
             '/slide1.jpg',
             '/slide2.jpg',
-            '/slide3.jpg',
-            '/slide4.jpg',
           ].map((bg, index) => (
             <img
               key={index}
               src={bg}
               alt={`Hero Background ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+              className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-1000 ${
                 currentSlide % 4 === index ? 'opacity-100' : 'opacity-0'
               }`}
             />
@@ -158,7 +158,7 @@ export const LandingHome: React.FC = () => {
 
             {/* Headline */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-tight">
-              Find trusted professionals near you
+              Hire Africa's Best Freelancers
             </h1>
 
             {/* Subheadline */}
@@ -359,16 +359,144 @@ export const LandingHome: React.FC = () => {
               </div>
             </div>
 
-            {/* Right: Phone Mockup */}
-            <div className="flex-shrink-0 relative flex items-center justify-center w-full lg:w-auto">
+            {/* Right: Phone Mockup — hand-crafted to match reference */}
+            <div className="flex-shrink-0 relative flex items-end justify-center w-full lg:w-auto">
               <div className="relative">
-                {/* Glow blob behind phone */}
+                {/* Glow blob */}
                 <div className="absolute -inset-12 bg-white/5 blur-3xl rounded-full pointer-events-none" />
-                <img
-                  src="/phone_mockup.png"
-                  alt="Kazify App Preview"
-                  className="relative z-10 w-64 sm:w-72 drop-shadow-2xl"
-                />
+
+                {/* Phone shell */}
+                <div className="relative z-10 w-[230px] bg-black rounded-[2.8rem] border-[7px] border-black shadow-[0_40px_80px_rgba(0,0,0,0.5)] overflow-hidden" style={{height: '480px'}}>
+
+                  {/* Status bar */}
+                  <div className="bg-white flex items-center justify-between px-5 pt-2 pb-1">
+                    <span className="text-[9px] font-bold text-black">18:39</span>
+                    {/* Dynamic island */}
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-14 h-4 bg-black rounded-full" />
+                    <div className="flex items-center gap-1">
+                      <svg className="w-2.5 h-2.5 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0112 10c-2.06 0-3.96.57-5.59 1.55M5 12.55a10.94 10.94 0 015.17-2.39M10.71 5.05A16 16 0 0122.56 9M1.42 9a15.91 15.91 0 014.7-2.88M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+                      <svg className="w-3 h-2 text-black fill-current" viewBox="0 0 20 12"><rect x="0" y="2" width="16" height="9" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><rect x="1.5" y="3.5" width="10" height="6" rx="1" fill="currentColor"/><path d="M17 5v3a2 2 0 000-3z" fill="currentColor"/></svg>
+                    </div>
+                  </div>
+
+                  {/* App content - scrollable inner */}
+                  <div className="h-full overflow-hidden flex flex-col">
+
+                    {/* App top bar */}
+                    <div className="bg-white flex items-center justify-between px-3 py-2 border-b border-gray-100">
+                      <div>
+                        <p className="text-[11px] font-black text-slate-900 leading-tight">Kazify</p>
+                        <p className="text-[7px] text-slate-400 leading-tight">Find trusted local services</p>
+                      </div>
+                      <button className="flex items-center gap-1 border border-[#0d4f47] rounded-full px-2 py-0.5">
+                        <svg className="w-2 h-2 text-[#0d4f47]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14"/></svg>
+                        <span className="text-[8px] font-bold text-[#0d4f47]">Sign in</span>
+                      </button>
+                    </div>
+
+                    {/* Teal hero */}
+                    <div className="bg-[#0d4f47] px-3 py-3">
+                      <span className="inline-flex items-center bg-white/20 rounded-full px-2 py-0.5 mb-2">
+                        <span className="text-[7px] text-white font-semibold">Kazify's #1 services marketplace</span>
+                      </span>
+                      <h3 className="text-white font-black text-[13px] leading-tight mb-0.5">
+                        Find trusted professionals<br/>near you
+                      </h3>
+                      <p className="text-white/70 text-[7px] leading-tight mb-2">
+                        Designers, developers, photographers, tutors & more — all in one place.
+                      </p>
+                      {/* Search bar */}
+                      <div className="flex items-center bg-white rounded-lg overflow-hidden mb-2">
+                        <svg className="w-3 h-3 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span className="flex-1 text-[7px] text-gray-400 px-1.5 py-1.5">Search services, providers...</span>
+                        <div className="bg-[#0d4f47] p-1.5 m-0.5 rounded-md">
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </div>
+                      </div>
+                      {/* Category pills */}
+                      <div className="flex gap-1 overflow-hidden">
+                        {['Events & Media', 'Tech & Digital', 'Education &'].map(c => (
+                          <span key={c} className="flex-shrink-0 flex items-center gap-0.5 bg-white/15 border border-white/20 rounded-full px-2 py-0.5">
+                            <span className="text-white text-[6px] font-medium">{c}</span>
+                            <svg className="w-1.5 h-1.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* White content below */}
+                    <div className="bg-white flex-1 px-3 py-2 overflow-hidden">
+                      {/* Browse by category */}
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[9px] font-black text-slate-900">Browse by category</span>
+                        <span className="text-[7px] font-semibold text-[#0d4f47] flex items-center gap-0.5">See all <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg></span>
+                      </div>
+                      <div className="flex gap-2 mb-3 overflow-hidden">
+                        {[
+                          { label: 'Events &\nMedia', color: 'bg-orange-100', emoji: '🎉' },
+                          { label: 'Tech &\nDigital', color: 'bg-blue-100', emoji: '💻' },
+                          { label: 'Education &\nTraining', color: 'bg-yellow-100', emoji: '📚' },
+                          { label: 'Personal\nServices', color: 'bg-pink-100', emoji: '💆' },
+                        ].map((cat) => (
+                          <div key={cat.label} className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                            <div className={`w-9 h-9 ${cat.color} rounded-xl flex items-center justify-center text-base`}>{cat.emoji}</div>
+                            <span className="text-[5.5px] text-center text-slate-600 leading-tight whitespace-pre-line">{cat.label}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Featured providers */}
+                      <div className="flex items-center justify-between mb-1">
+                        <div>
+                          <p className="text-[9px] font-black text-slate-900">Featured providers</p>
+                          <p className="text-[6px] text-slate-400">Verified professionals ready to help</p>
+                        </div>
+                        <span className="text-[7px] font-semibold text-[#0d4f47] flex items-center gap-0.5">See all <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg></span>
+                      </div>
+                      {[
+                        { name: 'Ssemwogerere Brian', role: 'Personal Driver and car seller/rent', loc: 'Kampala, Uganda' },
+                        { name: 'Nakato Studios', role: 'Photographer & Videographer', loc: 'KAMPALA, UGANDA' },
+                      ].map((p) => (
+                        <div key={p.name} className="flex items-center gap-2 py-1.5 border-b border-gray-50">
+                          <div className="w-7 h-7 rounded-full bg-slate-200 flex-shrink-0 overflow-hidden">
+                            <div className="w-full h-full bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center text-white text-[8px] font-bold">
+                              {p.name[0]}
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[8px] font-bold text-slate-900 truncate">{p.name}</p>
+                            <p className="text-[6.5px] text-slate-500 truncate">{p.role}</p>
+                            <p className="text-[6px] text-slate-400 flex items-center gap-0.5">
+                              <svg className="w-1.5 h-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                              {p.loc}
+                            </p>
+                          </div>
+                          <svg className="w-3 h-3 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bottom nav */}
+                    <div className="bg-white border-t border-gray-100 flex items-center justify-around px-2 py-1.5">
+                      {[
+                        { icon: '🏠', label: 'Home', active: true },
+                        { icon: '🔧', label: 'Services', active: false },
+                        { icon: '👥', label: 'Providers', active: false },
+                        { icon: '→', label: 'Sign in', active: false },
+                      ].map(n => (
+                        <div key={n.label} className="flex flex-col items-center gap-0.5">
+                          <span className="text-[10px]">{n.icon}</span>
+                          <span className={`text-[5.5px] font-semibold ${n.active ? 'text-[#0d4f47]' : 'text-slate-400'}`}>{n.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* "Free to use" floating pill */}
+                <div className="absolute -bottom-3 -right-4 z-20 bg-[#0d9488] text-white text-[9px] font-bold px-3 py-1.5 rounded-full shadow-lg">
+                  Free to use
+                </div>
               </div>
             </div>
 

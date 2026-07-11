@@ -1,160 +1,445 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, ArrowRight, Laptop, Brush, Pencil, Video, Briefcase, GraduationCap } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Camera, Upload } from 'lucide-react';
 
+// ── Types ────────────────────────────────────────────────────────────────────
+interface OnboardingData {
+  photo: string;
+  title: string;
+  skills: string[];
+  experience: string;
+  portfolio: string;
+  hourlyRate: string;
+  availability: string;
+  paymentMethod: string;
+}
+
+// ── Constants ────────────────────────────────────────────────────────────────
+const STEPS = [
+  { id: 1, label: 'Photo',          pct: 12.5  },
+  { id: 2, label: 'Title',          pct: 25    },
+  { id: 3, label: 'Skills',         pct: 37.5  },
+  { id: 4, label: 'Experience',     pct: 50    },
+  { id: 5, label: 'Portfolio',      pct: 62.5  },
+  { id: 6, label: 'Hourly Rate',    pct: 75    },
+  { id: 7, label: 'Availability',   pct: 87.5  },
+  { id: 8, label: 'Payment',        pct: 100   },
+];
+
+const SKILL_OPTIONS = [
+  'Web Development', 'Mobile Apps', 'UI/UX Design', 'Graphic Design',
+  'Copywriting', 'SEO Writing', 'Video Editing', 'Animation',
+  'Photography', 'Data Analysis', 'Digital Marketing', 'Translation',
+];
+
+const AVAILABILITY_OPTIONS = [
+  'Full-time (40+ hrs/week)',
+  'Part-time (20–40 hrs/week)',
+  'Weekends only',
+  'Flexible / As needed',
+];
+
+const PAYMENT_OPTIONS = [
+  { id: 'mtn', label: 'MTN Mobile Money', icon: '📱' },
+  { id: 'airtel', label: 'Airtel Money', icon: '📲' },
+  { id: 'bank', label: 'Bank Transfer', icon: '🏦' },
+  { id: 'paypal', label: 'PayPal', icon: '💳' },
+];
+
+// ── Component ────────────────────────────────────────────────────────────────
 export const Onboarding: React.FC = () => {
   const { currentUser, completeOnboarding } = useAuth();
   const navigate = useNavigate();
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [industry, setIndustry] = useState('');
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState<OnboardingData>({
+    photo: '', title: '', skills: [], experience: '',
+    portfolio: '', hourlyRate: '', availability: '', paymentMethod: '',
+  });
+  const [error, setError] = useState('');
 
-  if (!currentUser) {
-    return <Navigate to="/join" replace />;
-  }
-
+  // ── Guards ─────────────────────────────────────────────────────────────────
+  if (!currentUser) return <Navigate to="/join" replace />;
   if (currentUser.onboardingComplete) {
-    return <Navigate to={currentUser.role === 'student' ? '/academy' : currentUser.role === 'client' ? '/services' : '/jobs'} replace />;
+    return <Navigate to={currentUser.role === 'client' ? '/services' : '/jobs'} replace />;
   }
 
-  const handleComplete = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (currentUser.role === 'client' && !industry) return;
-    if ((currentUser.role === 'freelancer' || currentUser.role === 'student') && selectedSkills.length === 0) return;
+  // For non-freelancer roles, do a simple redirect after quick complete
+  if (currentUser.role !== 'freelancer') {
+    completeOnboarding({ skills: [] });
+    return <Navigate to={currentUser.role === 'client' ? '/services' : '/jobs'} replace />;
+  }
 
-    completeOnboarding({
-      skills: selectedSkills,
-      ...(currentUser.role === 'client' ? { bio: `${currentUser.bio} Industry: ${industry}` } : {})
-    });
+  // ── Progress ───────────────────────────────────────────────────────────────
+  const progress = STEPS[step - 1].pct;
 
-    navigate(currentUser.role === 'student' ? '/academy' : currentUser.role === 'client' ? '/services' : '/jobs');
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  const validate = (): boolean => {
+    setError('');
+    if (step === 1 && !data.photo)         { setError('Please upload a profile photo.'); return false; }
+    if (step === 2 && !data.title.trim())  { setError('Please enter a professional title.'); return false; }
+    if (step === 3 && data.skills.length === 0) { setError('Select at least one skill.'); return false; }
+    if (step === 4 && !data.experience)    { setError('Please select your experience level.'); return false; }
+    if (step === 6 && !data.hourlyRate)    { setError('Please enter your hourly rate.'); return false; }
+    if (step === 7 && !data.availability)  { setError('Please choose your availability.'); return false; }
+    if (step === 8 && !data.paymentMethod) { setError('Please choose a payment method.'); return false; }
+    return true;
   };
 
-  const toggleSkill = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
-    );
+  const next = () => {
+    if (!validate()) return;
+    if (step < 8) { setStep(s => s + 1); }
+    else { finish(); }
   };
 
-  const skillOptions = [
-    { id: 'web', name: 'Web Development', icon: <Laptop className="w-4 h-4" /> },
-    { id: 'design', name: 'UI/UX Design', icon: <Brush className="w-4 h-4" /> },
-    { id: 'writing', name: 'Copywriting', icon: <Pencil className="w-4 h-4" /> },
-    { id: 'video', name: 'Video Editing', icon: <Video className="w-4 h-4" /> },
-  ];
+  const back = () => { setError(''); setStep(s => s - 1); };
 
-  const industries = [
-    "Technology & SaaS", "E-commerce", "Agriculture", "Finance & Fintech", "Healthcare", "Education"
-  ];
+  const finish = () => {
+    completeOnboarding({ skills: data.skills });
+    navigate('/jobs');
+  };
 
+  // ── Photo upload (preview only — no real upload in sandbox) ─────────────────
+  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setData(d => ({ ...d, photo: reader.result as string }));
+    reader.readAsDataURL(file);
+  };
+
+  const toggleSkill = (skill: string) =>
+    setData(d => ({
+      ...d,
+      skills: d.skills.includes(skill)
+        ? d.skills.filter(s => s !== skill)
+        : [...d.skills, skill],
+    }));
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 bg-slate-50 flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-2xl bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden relative">
-        {/* Top Header */}
-        <div className="bg-slate-900 text-white p-8 text-center relative">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(22,163,74,0.15)_0%,transparent_60%)]" />
-          <Sparkles className="w-8 h-8 text-primary-400 mx-auto mb-3 relative z-10" />
-          <h1 className="text-3xl font-black font-display tracking-tight relative z-10">
-            Welcome to Kazify, {currentUser.name.split(' ')[0]}!
-          </h1>
-          <p className="text-slate-300 mt-2 relative z-10 text-sm">
-            Let's personalize your experience before you get started.
-          </p>
+    <div className="flex-1 bg-gray-50 flex items-center justify-center min-h-screen py-10 px-4">
+      <div className="w-full max-w-lg">
+
+        {/* Header */}
+        <div className="text-center mb-6">
+          <span className="text-2xl font-black tracking-tight text-slate-900">
+            Kazi<span className="text-[#0d4f47]">fy</span>
+          </span>
+          <p className="text-sm text-slate-500 mt-1 font-medium">Freelancer Onboarding</p>
         </div>
 
-        <form onSubmit={handleComplete} className="p-8 space-y-8">
-          
-          {currentUser.role === 'client' && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-blue-500" /> What industry are you in?
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {industries.map(ind => (
+        {/* Progress bar */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between text-xs text-slate-400 font-medium mb-2">
+            <span>Step {step} of 8 — {STEPS[step - 1].label}</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#0d4f47] rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          {/* Step dots at 20 / 40 / 60 / 80 / 100 */}
+          <div className="flex justify-between mt-2 px-0.5">
+            {[20, 40, 60, 80, 100].map(p => (
+              <div key={p} className="flex flex-col items-center">
+                <div className={`w-2 h-2 rounded-full ${progress >= p ? 'bg-[#0d4f47]' : 'bg-gray-300'}`} />
+                <span className="text-[9px] text-slate-400 mt-0.5">{p}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+
+          {/* Error */}
+          {error && (
+            <div className="mb-5 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">
+              {error}
+            </div>
+          )}
+
+          {/* ── STEP 1: Photo ─────────────────────────────────────────────── */}
+          {step === 1 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Profile Photo</h2>
+              <p className="text-sm text-slate-500 mb-6">A clear photo helps clients trust you.</p>
+              <div className="flex flex-col items-center gap-5">
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  className="w-32 h-32 rounded-full border-4 border-dashed border-gray-200 hover:border-[#0d4f47] flex items-center justify-center cursor-pointer overflow-hidden transition group bg-gray-50"
+                >
+                  {data.photo
+                    ? <img src={data.photo} alt="preview" className="w-full h-full object-cover" />
+                    : <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-[#0d4f47]">
+                        <Camera className="w-8 h-8" />
+                        <span className="text-xs font-medium">Upload photo</span>
+                      </div>
+                  }
+                </div>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="flex items-center gap-2 border border-gray-200 hover:border-[#0d4f47] text-slate-600 hover:text-[#0d4f47] text-sm font-semibold px-5 py-2.5 rounded-xl transition"
+                >
+                  <Upload className="w-4 h-4" /> Choose Photo
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 2: Title ─────────────────────────────────────────────── */}
+          {step === 2 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Professional Title</h2>
+              <p className="text-sm text-slate-500 mb-6">This is the first thing clients see about you.</p>
+              <input
+                type="text"
+                value={data.title}
+                onChange={e => setData(d => ({ ...d, title: e.target.value }))}
+                placeholder="e.g. Full-Stack Developer & UI Designer"
+                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d4f47]/30 focus:border-[#0d4f47] transition"
+              />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {['Full-Stack Developer', 'UI/UX Designer', 'Video Editor', 'Copywriter', 'Photographer'].map(t => (
                   <button
-                    type="button"
-                    key={ind}
-                    onClick={() => setIndustry(ind)}
-                    className={`p-3 text-sm font-semibold rounded-xl border text-left transition ${
-                      industry === ind 
-                        ? 'bg-blue-50 border-blue-500 text-blue-700' 
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
+                    key={t} type="button"
+                    onClick={() => setData(d => ({ ...d, title: t }))}
+                    className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-slate-600 hover:border-[#0d4f47] hover:text-[#0d4f47] transition"
                   >
-                    {ind}
+                    {t}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {currentUser.role === 'freelancer' && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Laptop className="w-5 h-5 text-primary-500" /> What are your primary skills?
-              </h3>
-              <p className="text-xs text-slate-500">Select the areas you excel in to help us match you with clients.</p>
-              <div className="grid grid-cols-2 gap-3">
-                {skillOptions.map(skill => (
+          {/* ── STEP 3: Skills ────────────────────────────────────────────── */}
+          {step === 3 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Your Skills</h2>
+              <p className="text-sm text-slate-500 mb-6">Select all that apply — you can update these later.</p>
+              <div className="grid grid-cols-2 gap-2.5">
+                {SKILL_OPTIONS.map(skill => {
+                  const active = data.skills.includes(skill);
+                  return (
+                    <button
+                      key={skill} type="button"
+                      onClick={() => toggleSkill(skill)}
+                      className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm font-medium text-left transition ${
+                        active
+                          ? 'border-[#0d4f47] bg-[#0d4f47]/5 text-[#0d4f47]'
+                          : 'border-gray-200 text-slate-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border ${
+                        active ? 'bg-[#0d4f47] border-[#0d4f47]' : 'border-gray-300'
+                      }`}>
+                        {active && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                      </div>
+                      {skill}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 4: Experience ────────────────────────────────────────── */}
+          {step === 4 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Experience Level</h2>
+              <p className="text-sm text-slate-500 mb-6">Be honest — clients appreciate transparency.</p>
+              <div className="space-y-3">
+                {[
+                  { id: 'entry',  label: 'Entry Level',    sub: 'Less than 1 year of experience' },
+                  { id: 'mid',    label: 'Intermediate',   sub: '1–3 years of experience' },
+                  { id: 'senior', label: 'Senior',         sub: '3–5 years of experience' },
+                  { id: 'expert', label: 'Expert',         sub: '5+ years of experience' },
+                ].map(lvl => (
                   <button
-                    type="button"
-                    key={skill.id}
-                    onClick={() => toggleSkill(skill.name)}
-                    className={`p-4 flex items-center gap-3 rounded-xl border transition ${
-                      selectedSkills.includes(skill.name)
-                        ? 'bg-primary-50 border-primary-500 text-primary-700 font-bold'
-                        : 'bg-white border-slate-200 text-slate-600 font-semibold hover:bg-slate-50'
+                    key={lvl.id} type="button"
+                    onClick={() => setData(d => ({ ...d, experience: lvl.id }))}
+                    className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 text-left transition ${
+                      data.experience === lvl.id
+                        ? 'border-[#0d4f47] bg-[#0d4f47]/5'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className={selectedSkills.includes(skill.name) ? 'text-primary-500' : 'text-slate-400'}>
-                      {skill.icon}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      data.experience === lvl.id ? 'border-[#0d4f47]' : 'border-gray-300'
+                    }`}>
+                      {data.experience === lvl.id && <div className="w-2.5 h-2.5 rounded-full bg-[#0d4f47]" />}
                     </div>
-                    <span className="text-sm">{skill.name}</span>
+                    <div>
+                      <p className={`font-bold text-sm ${data.experience === lvl.id ? 'text-[#0d4f47]' : 'text-slate-800'}`}>{lvl.label}</p>
+                      <p className="text-xs text-slate-500">{lvl.sub}</p>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {currentUser.role === 'student' && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-purple-500" /> What do you want to learn?
-              </h3>
-              <p className="text-xs text-slate-500">Select the fields you're most interested in mastering at the Academy.</p>
-              <div className="grid grid-cols-2 gap-3">
-                {skillOptions.map(skill => (
+          {/* ── STEP 5: Portfolio ─────────────────────────────────────────── */}
+          {step === 5 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Portfolio</h2>
+              <p className="text-sm text-slate-500 mb-6">Link to your best work — website, Behance, GitHub, etc.</p>
+              <input
+                type="url"
+                value={data.portfolio}
+                onChange={e => setData(d => ({ ...d, portfolio: e.target.value }))}
+                placeholder="https://yourportfolio.com"
+                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d4f47]/30 focus:border-[#0d4f47] transition"
+              />
+              <p className="text-xs text-slate-400 mt-3">
+                Don't have one yet?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setData(d => ({ ...d, portfolio: 'skip' })); setStep(s => s + 1); }}
+                  className="text-[#0d4f47] font-semibold hover:underline"
+                >
+                  Skip for now
+                </button>
+              </p>
+            </div>
+          )}
+
+          {/* ── STEP 6: Hourly Rate ───────────────────────────────────────── */}
+          {step === 6 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Hourly Rate</h2>
+              <p className="text-sm text-slate-500 mb-6">Set your starting rate in USD. You can adjust per project.</p>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={data.hourlyRate}
+                  onChange={e => setData(d => ({ ...d, hourlyRate: e.target.value }))}
+                  placeholder="0"
+                  className="w-full pl-8 pr-16 py-3.5 border border-gray-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d4f47]/30 focus:border-[#0d4f47] transition"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">/ hr</span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {['$10', '$15', '$25', '$35', '$50', '$75'].map(r => (
                   <button
-                    type="button"
-                    key={skill.id}
-                    onClick={() => toggleSkill(skill.name)}
-                    className={`p-4 flex items-center gap-3 rounded-xl border transition ${
-                      selectedSkills.includes(skill.name)
-                        ? 'bg-purple-50 border-purple-500 text-purple-700 font-bold'
-                        : 'bg-white border-slate-200 text-slate-600 font-semibold hover:bg-slate-50'
+                    key={r} type="button"
+                    onClick={() => setData(d => ({ ...d, hourlyRate: r.replace('$', '') }))}
+                    className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-slate-600 hover:border-[#0d4f47] hover:text-[#0d4f47] transition"
+                  >
+                    {r}/hr
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 7: Availability ──────────────────────────────────────── */}
+          {step === 7 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Availability</h2>
+              <p className="text-sm text-slate-500 mb-6">How many hours per week can you commit?</p>
+              <div className="space-y-3">
+                {AVAILABILITY_OPTIONS.map(opt => (
+                  <button
+                    key={opt} type="button"
+                    onClick={() => setData(d => ({ ...d, availability: opt }))}
+                    className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 text-left transition ${
+                      data.availability === opt
+                        ? 'border-[#0d4f47] bg-[#0d4f47]/5'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className={selectedSkills.includes(skill.name) ? 'text-purple-500' : 'text-slate-400'}>
-                      {skill.icon}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      data.availability === opt ? 'border-[#0d4f47]' : 'border-gray-300'
+                    }`}>
+                      {data.availability === opt && <div className="w-2.5 h-2.5 rounded-full bg-[#0d4f47]" />}
                     </div>
-                    <span className="text-sm">{skill.name}</span>
+                    <span className={`text-sm font-semibold ${data.availability === opt ? 'text-[#0d4f47]' : 'text-slate-700'}`}>
+                      {opt}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="pt-4 border-t border-slate-100 flex justify-end">
+          {/* ── STEP 8: Payment Method ────────────────────────────────────── */}
+          {step === 8 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Payment Method</h2>
+              <p className="text-sm text-slate-500 mb-6">How would you like to receive your earnings?</p>
+              <div className="grid grid-cols-2 gap-3">
+                {PAYMENT_OPTIONS.map(pm => (
+                  <button
+                    key={pm.id} type="button"
+                    onClick={() => setData(d => ({ ...d, paymentMethod: pm.id }))}
+                    className={`flex flex-col items-center gap-2 px-4 py-5 rounded-xl border-2 transition ${
+                      data.paymentMethod === pm.id
+                        ? 'border-[#0d4f47] bg-[#0d4f47]/5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="text-3xl">{pm.icon}</span>
+                    <span className={`text-xs font-bold text-center ${data.paymentMethod === pm.id ? 'text-[#0d4f47]' : 'text-slate-700'}`}>
+                      {pm.label}
+                    </span>
+                    {data.paymentMethod === pm.id && (
+                      <div className="w-5 h-5 rounded-full bg-[#0d4f47] flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Navigation buttons ────────────────────────────────────────── */}
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
             <button
-              type="submit"
-              disabled={(currentUser.role === 'client' && !industry) || (currentUser.role !== 'client' && selectedSkills.length === 0)}
-              className="bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-xl transition flex items-center gap-2"
+              type="button"
+              onClick={back}
+              disabled={step === 1}
+              className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-0 transition"
             >
-              Complete Profile <ArrowRight className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+
+            <button
+              type="button"
+              onClick={next}
+              className="flex items-center gap-2 bg-[#0d4f47] hover:bg-[#0a3d37] text-white font-bold py-3 px-8 rounded-xl text-sm transition"
+            >
+              {step === 8 ? (
+                <>Finish <Check className="w-4 h-4" /></>
+              ) : (
+                <>Continue <ArrowRight className="w-4 h-4" /></>
+              )}
             </button>
           </div>
-        </form>
+        </div>
+
+        {/* Step indicators */}
+        <div className="flex justify-center gap-1.5 mt-5">
+          {STEPS.map(s => (
+            <div
+              key={s.id}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                s.id === step ? 'w-6 bg-[#0d4f47]' : s.id < step ? 'w-3 bg-[#0d4f47]/40' : 'w-3 bg-gray-200'
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

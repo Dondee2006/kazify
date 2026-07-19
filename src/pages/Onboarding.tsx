@@ -41,10 +41,10 @@ const AVAILABILITY_OPTIONS = [
 ];
 
 const PAYMENT_OPTIONS = [
-  { id: 'mtn', label: 'MTN Mobile Money', icon: '📱' },
-  { id: 'airtel', label: 'Airtel Money', icon: '📲' },
-  { id: 'bank', label: 'Bank Transfer', icon: '🏦' },
-  { id: 'paypal', label: 'PayPal', icon: '💳' },
+  { id: 'mtn', label: 'MTN Mobile Money', image: '/mtn.png' },
+  { id: 'airtel', label: 'Airtel Money', image: '/airtel.png' },
+  { id: 'bank', label: 'Bank Transfer', image: '/absa.png' },
+  { id: 'paypal', label: 'PayPal', image: 'paypal' },
 ];
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -389,7 +389,16 @@ export const Onboarding: React.FC = () => {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <span className="text-3xl">{pm.icon}</span>
+                    <div className="h-10 flex items-center justify-center">
+                      {pm.image === 'paypal' ? (
+                        <svg role="img" viewBox="0 0 24 24" className="h-8 w-8 text-[#003087]" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                          <title>PayPal</title>
+                          <path d="M15.607 4.653H8.941L6.645 19.251H1.82L4.862 0h7.995c3.754 0 6.375 2.294 6.473 5.513-.648-.478-2.105-.86-3.722-.86m6.57 5.546c0 3.41-3.01 6.853-6.958 6.853h-2.493L11.595 24H6.74l1.845-11.538h3.592c4.208 0 7.346-3.634 7.153-6.949a5.24 5.24 0 0 1 2.848 4.686M9.653 5.546h6.408c.907 0 1.942.222 2.363.541-.195 2.741-2.655 5.483-6.441 5.483H8.714Z" />
+                        </svg>
+                      ) : (
+                        <img src={pm.image} alt={pm.label} className="h-8 w-auto object-contain" />
+                      )}
+                    </div>
                     <span className={`text-xs font-bold text-center ${data.paymentMethod === pm.id ? 'text-[#0d4f47]' : 'text-slate-700'}`}>
                       {pm.label}
                     </span>

@@ -22,7 +22,7 @@ export const StudentMarketing: React.FC = () => {
               </h1>
               
               <p className="text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Are you a high school student with a passion for tech or design? Join our gamified learning arena to develop high-income skills, complete real-world challenges, and build a portfolio before you even graduate.
+                Are you an ambitious youth with a passion for tech, creative arts, business, or professional services? Join our learning arena to develop high-income skills, complete real-world challenges, and build a professional portfolio to launch your career.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
@@ -130,7 +130,7 @@ export const StudentMarketing: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <h2 className="text-3xl sm:text-4xl font-black font-display tracking-tight leading-tight">
-                Why high schoolers are choosing Kazify Academy
+                Why youth are choosing Kazify Academy
               </h2>
               <ul className="space-y-6">
                 <li className="flex items-start gap-4">
@@ -160,12 +160,12 @@ export const StudentMarketing: React.FC = () => {
             <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
               <div className="text-center space-y-6">
                 <h3 className="text-2xl font-bold font-display text-white">Ready to level up?</h3>
-                <p className="text-slate-400 text-sm">Create your student profile today and gain access to the Academy Arena.</p>
+                <p className="text-slate-400 text-sm">Create your profile today and gain access to the Academy Arena.</p>
                 <Link
                   to="/join"
                   className="block w-full bg-white hover:bg-slate-100 text-slate-900 font-bold px-6 py-4 rounded-xl transition text-lg shadow-xl"
                 >
-                  Create Student Account
+                  Create Free Account
                 </Link>
                 <p className="text-xs text-slate-500 pt-2">Requires no credit card or commitment.</p>
               </div>

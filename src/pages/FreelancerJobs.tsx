@@ -668,7 +668,7 @@ export const FreelancerJobs: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-bold text-slate-850">Sarah Mwangi</h4>
-                        <p className="text-xs text-slate-400">Kenya • Vetted Buyer since 2023</p>
+                        <p className="text-xs text-slate-400">Uganda • Vetted Buyer since 2023</p>
                         <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-650">
                           <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
                           <span>4.9 Client Rating (24 reviews)</span>

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { useAuth } from '../context/AuthContext';
 import { GigCard } from '../components/GigCard';
-import { Search, Sparkles, Target, Trophy, Briefcase, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, Sparkles, Target, Trophy, Briefcase, ArrowRight, CheckCircle2, Zap, Bell, MapPin, Shield, SearchCheck, MessageCircle, CheckSquare, Home, Wrench, Users, LogIn, Palette, Code2, PenLine, Video } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 // ── Slideshow data: one entry per slide ──────────────────────────────────────
 const SLIDES = [
@@ -38,7 +38,7 @@ const SLIDES = [
   {
     id: 3,
     name: 'Academy Team',
-    country: 'Kenya 🇰🇪',
+    country: 'Uganda 🇺🇬',
     role: 'Kazify Academy',
     specialty: 'Skills · Challenges · Badges · Real Gigs',
     rating: 5.0,
@@ -68,6 +68,7 @@ const SLIDES = [
 export const LandingHome: React.FC = () => {
   const { filteredGigs, searchQuery, setSearchQuery, addShoutout } = useMarketplace();
   const { currentUser, allUsers } = useAuth();
+  const navigate = useNavigate();
   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPostModal, setShowPostModal] = useState(false);
@@ -152,7 +153,7 @@ export const LandingHome: React.FC = () => {
 
             {/* Subheadline */}
             <p className="text-lg sm:text-xl text-white/90">
-              Designers, developers, photographers, tutors & more — all in one place.
+              Designers, developers, photographers, tutors, cleaners, event planners & more — all in one place.
             </p>
 
             {/* Search Bar */}
@@ -186,7 +187,14 @@ export const LandingHome: React.FC = () => {
 
               {/* Category Pills */}
               <div className="flex flex-wrap gap-3 mt-6">
-                {['Graphics & Design', 'Programming & IT', 'Writing & Translation', 'Video & Animation'].map((tag) => (
+                {[
+                  'Graphics & Design',
+                  'Programming & IT',
+                  'Events & Media',
+                  'Education & Training',
+                  'Home & Cleaning',
+                  'Business Services',
+                ].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => setSearchQuery(tag)}
@@ -223,12 +231,23 @@ export const LandingHome: React.FC = () => {
       <section className="w-full bg-gray-50 border-b border-gray-100 relative overflow-hidden">
         <div className="pointer-events-none absolute right-0 top-0 h-full w-24 z-10 bg-gradient-to-l from-gray-50 to-transparent"></div>
         <div className="flex overflow-x-auto scrollbar-hide">
-          {['Graphics & Design', 'Programming & IT', 'Writing & Translation', 'Video & Animation'].map((cat, idx) => (
-            <div key={idx} className="min-w-[160px] flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 border-r border-gray-100 hover:bg-white transition cursor-pointer" onClick={() => setSearchQuery(cat)}>
-              <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
-                <span className="text-xs font-bold">{cat.charAt(0)}</span>
+          {[
+            { label: 'Graphics & Design', icon: <Palette className="w-3.5 h-3.5" />, color: 'bg-pink-100 text-pink-600' },
+            { label: 'Programming & IT', icon: <Code2 className="w-3.5 h-3.5" />, color: 'bg-blue-100 text-blue-600' },
+            { label: 'Writing & Translation', icon: <PenLine className="w-3.5 h-3.5" />, color: 'bg-amber-100 text-amber-600' },
+            { label: 'Video & Animation', icon: <Video className="w-3.5 h-3.5" />, color: 'bg-violet-100 text-violet-600' },
+            { label: 'Events & Media', icon: <Sparkles className="w-3.5 h-3.5" />, color: 'bg-orange-100 text-orange-600' },
+            { label: 'Education & Training', icon: <Zap className="w-3.5 h-3.5" />, color: 'bg-yellow-100 text-yellow-600' },
+            { label: 'Home & Cleaning', icon: <Home className="w-3.5 h-3.5" />, color: 'bg-green-100 text-green-600' },
+            { label: 'Business Services', icon: <Briefcase className="w-3.5 h-3.5" />, color: 'bg-teal-100 text-teal-600' },
+            { label: 'Photography', icon: <Bell className="w-3.5 h-3.5" />, color: 'bg-rose-100 text-rose-600' },
+            { label: 'Personal Care', icon: <Users className="w-3.5 h-3.5" />, color: 'bg-purple-100 text-purple-600' },
+          ].map(({ label, icon, color }, idx) => (
+            <div key={idx} className="min-w-[170px] flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 border-r border-gray-100 hover:bg-white transition cursor-pointer" onClick={() => setSearchQuery(label)}>
+              <div className={`w-7 h-7 rounded-full ${color} flex items-center justify-center shrink-0`}>
+                {icon}
               </div>
-              <span className="text-sm text-slate-700 font-medium whitespace-nowrap">{cat}</span>
+              <span className="text-sm text-slate-700 font-medium whitespace-nowrap">{label}</span>
             </div>
           ))}
         </div>
@@ -306,13 +325,13 @@ export const LandingHome: React.FC = () => {
               {/* Feature bullets — 2×2 grid */}
               <div className="grid grid-cols-2 gap-3 mb-10 max-w-md">
                 {[
-                  { icon: '⚡', title: 'Browse & contact', sub: 'providers instantly' },
-                  { icon: '🔔', title: 'Real-time enquiry', sub: 'notifications' },
-                  { icon: '📍', title: 'Find services', sub: 'near you' },
-                  { icon: '🔒', title: 'Safe, direct', sub: 'communication' },
+                  { icon: <Zap className="w-4 h-4 text-yellow-300" />, title: 'Browse & contact', sub: 'providers instantly' },
+                  { icon: <Bell className="w-4 h-4 text-sky-300" />, title: 'Real-time enquiry', sub: 'notifications' },
+                  { icon: <MapPin className="w-4 h-4 text-rose-300" />, title: 'Find services', sub: 'near you' },
+                  { icon: <Shield className="w-4 h-4 text-emerald-300" />, title: 'Safe, direct', sub: 'communication' },
                 ].map((feat, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-white/10 rounded-xl px-4 py-3">
-                    <span className="text-lg mt-0.5 flex-shrink-0">{feat.icon}</span>
+                  <div key={i} className="flex items-start gap-3 bg-white/10 hover:bg-white/15 transition rounded-xl px-4 py-3">
+                    <span className="mt-0.5 flex-shrink-0 bg-white/10 rounded-lg p-1.5">{feat.icon}</span>
                     <div>
                       <p className="text-white text-xs font-bold leading-tight">{feat.title}</p>
                       <p className="text-white/70 text-xs">{feat.sub}</p>
@@ -374,42 +393,80 @@ export const LandingHome: React.FC = () => {
                     {/* App top bar */}
                     <div className="bg-white flex items-center justify-between px-3 py-2 border-b border-gray-100">
                       <div>
-                        <p className="text-[11px] font-black text-slate-900 leading-tight">Kazify</p>
+                        <p className="text-[11px] font-black text-slate-900 leading-tight">
+                          Kazi<span className="text-primary-600">fy</span>
+                        </p>
                         <p className="text-[7px] text-slate-400 leading-tight">Find trusted local services</p>
                       </div>
-                      <button className="flex items-center gap-1 border border-[#0d4f47] rounded-full px-2 py-0.5">
+                      <Link to="/join" className="flex items-center gap-1 border border-[#0d4f47] rounded-full px-2 py-0.5 hover:bg-slate-50 transition">
                         <svg className="w-2 h-2 text-[#0d4f47]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14"/></svg>
                         <span className="text-[8px] font-bold text-[#0d4f47]">Sign in</span>
-                      </button>
+                      </Link>
                     </div>
 
-                    {/* Teal hero */}
-                    <div className="bg-[#0d4f47] px-3 py-3">
-                      <span className="inline-flex items-center bg-white/20 rounded-full px-2 py-0.5 mb-2">
-                        <span className="text-[7px] text-white font-semibold">Kazify's #1 services marketplace</span>
-                      </span>
-                      <h3 className="text-white font-black text-[13px] leading-tight mb-0.5">
-                        Find trusted professionals<br/>near you
-                      </h3>
-                      <p className="text-white/70 text-[7px] leading-tight mb-2">
-                        Designers, developers, photographers, tutors & more — all in one place.
-                      </p>
-                      {/* Search bar */}
-                      <div className="flex items-center bg-white rounded-lg overflow-hidden mb-2">
-                        <svg className="w-3 h-3 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <span className="flex-1 text-[7px] text-gray-400 px-1.5 py-1.5">Search services, providers...</span>
-                        <div className="bg-[#0d4f47] p-1.5 m-0.5 rounded-md">
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    {/* Hero with background image slideshow — mirrors the real site */}
+                    <div className="relative overflow-hidden" style={{minHeight: '155px'}}>
+                      {/* Background images — same array as real hero */}
+                      {[
+                        '/pexels-kindelmedia-8487341.jpg',
+                        '/pexels-pexels-by-ardarh-664883754-33653240.jpg',
+                        '/slide1.jpg',
+                        '/slide2.jpg',
+                      ].map((bg, index) => (
+                        <img
+                          key={index}
+                          src={bg}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-1000"
+                          style={{ opacity: (currentSlide % 4) === index ? 1 : 0 }}
+                        />
+                      ))}
+                      {/* Gradient overlay — dark left just like the real site */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+
+                      {/* Content on top */}
+                      <div className="relative z-10 px-3 py-3">
+                        <span className="inline-flex items-center bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 mb-2 border border-white/20">
+                          <span className="text-[7px] text-white font-semibold">Kazify's #1 services marketplace</span>
+                        </span>
+                        <h3 className="text-white font-black text-[13px] leading-tight mb-0.5 drop-shadow">
+                          Find trusted professionals<br/>near you
+                        </h3>
+                        <p className="text-white/80 text-[7px] leading-tight mb-2 drop-shadow">
+                          Designers, developers, photographers & more.
+                        </p>
+                        {/* Search bar */}
+                        <Link to="/services" className="flex items-center bg-white rounded-lg overflow-hidden mb-2 shadow-lg cursor-pointer hover:bg-slate-50 transition">
+                          <svg className="w-3 h-3 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                          <span className="flex-1 text-[7px] text-gray-400 px-1.5 py-1.5 text-left">Search services, providers...</span>
+                          <div className="bg-[#0d4f47] p-1.5 m-0.5 rounded-md">
+                            <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                          </div>
+                        </Link>
+                        {/* Category pills */}
+                        <div className="flex gap-1 overflow-hidden">
+                          {['Events & Media', 'Tech & Digital', 'Education'].map(c => (
+                            <button
+                              key={c}
+                              onClick={() => { setSearchQuery(c === 'Education' ? 'Education & Training' : c); navigate('/services'); }}
+                              className="flex-shrink-0 flex items-center gap-0.5 bg-white/15 backdrop-blur-sm border border-white/25 rounded-full px-2 py-0.5 hover:bg-white/30 transition text-left"
+                            >
+                              <span className="text-white text-[6px] font-medium">{c}</span>
+                              <svg className="w-1.5 h-1.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                          ))}
                         </div>
-                      </div>
-                      {/* Category pills */}
-                      <div className="flex gap-1 overflow-hidden">
-                        {['Events & Media', 'Tech & Digital', 'Education &'].map(c => (
-                          <span key={c} className="flex-shrink-0 flex items-center gap-0.5 bg-white/15 border border-white/20 rounded-full px-2 py-0.5">
-                            <span className="text-white text-[6px] font-medium">{c}</span>
-                            <svg className="w-1.5 h-1.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
-                          </span>
-                        ))}
+                        {/* Slide dots */}
+                        <div className="flex items-center gap-1 mt-2">
+                          {[0,1,2,3].map(i => (
+                            <div key={i} className="rounded-full transition-all" style={{
+                              width: (currentSlide % 4) === i ? '10px' : '4px',
+                              height: '3px',
+                              background: (currentSlide % 4) === i ? '#fff' : 'rgba(255,255,255,0.4)'
+                            }} />
+                          ))}
+                        </div>
                       </div>
                     </div>
 
@@ -418,65 +475,86 @@ export const LandingHome: React.FC = () => {
                       {/* Browse by category */}
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[9px] font-black text-slate-900">Browse by category</span>
-                        <span className="text-[7px] font-semibold text-[#0d4f47] flex items-center gap-0.5">See all <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg></span>
+                        <Link to="/services" className="text-[7px] font-semibold text-[#0d4f47] flex items-center gap-0.5 hover:underline">
+                          See all <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                        </Link>
                       </div>
-                      <div className="flex gap-2 mb-3 overflow-hidden">
+                      <div className="flex flex-wrap gap-1.5 mb-3 overflow-hidden">
                         {[
-                          { label: 'Events &\nMedia', color: 'bg-orange-100', emoji: '🎉' },
-                          { label: 'Tech &\nDigital', color: 'bg-blue-100', emoji: '💻' },
-                          { label: 'Education &\nTraining', color: 'bg-yellow-100', emoji: '📚' },
-                          { label: 'Personal\nServices', color: 'bg-pink-100', emoji: '💆' },
+                          { label: 'Events & Media', color: 'bg-orange-50 text-orange-700 border-orange-100' },
+                          { label: 'Tech & Digital', color: 'bg-blue-50 text-blue-700 border-blue-100' },
+                          { label: 'Education', color: 'bg-yellow-50 text-yellow-800 border-yellow-100' },
+                          { label: 'Personal', color: 'bg-pink-50 text-pink-700 border-pink-100' },
                         ].map((cat) => (
-                          <div key={cat.label} className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                            <div className={`w-9 h-9 ${cat.color} rounded-xl flex items-center justify-center text-base`}>{cat.emoji}</div>
-                            <span className="text-[5.5px] text-center text-slate-600 leading-tight whitespace-pre-line">{cat.label}</span>
-                          </div>
+                          <button
+                            key={cat.label}
+                            onClick={() => { setSearchQuery(cat.label === 'Education' ? 'Education & Training' : cat.label === 'Personal' ? 'Personal Services' : cat.label); navigate('/services'); }}
+                            className={`px-2 py-1 rounded-full border text-[6px] font-bold transition transform hover:scale-105 active:scale-95 ${cat.color}`}
+                          >
+                            {cat.label}
+                          </button>
                         ))}
                       </div>
 
-                      {/* Featured providers */}
-                      <div className="flex items-center justify-between mb-1">
+                      {/* Featured Services */}
+                      <div className="flex items-center justify-between mb-1.5">
                         <div>
-                          <p className="text-[9px] font-black text-slate-900">Featured providers</p>
-                          <p className="text-[6px] text-slate-400">Verified professionals ready to help</p>
+                          <p className="text-[9px] font-black text-slate-900">Featured Services</p>
+                          <p className="text-[6px] text-slate-400">Top-rated gigs on Kazify</p>
                         </div>
-                        <span className="text-[7px] font-semibold text-[#0d4f47] flex items-center gap-0.5">See all <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg></span>
+                        <Link to="/services" className="text-[7px] font-semibold text-[#0d4f47] flex items-center gap-0.5 hover:underline">
+                          See all <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                        </Link>
                       </div>
-                      {[
-                        { name: 'Ssemwogerere Brian', role: 'Personal Driver and car seller/rent', loc: 'Kampala, Uganda' },
-                        { name: 'Nakato Studios', role: 'Photographer & Videographer', loc: 'KAMPALA, UGANDA' },
-                      ].map((p) => (
-                        <div key={p.name} className="flex items-center gap-2 py-1.5 border-b border-gray-50">
-                          <div className="w-7 h-7 rounded-full bg-slate-200 flex-shrink-0 overflow-hidden">
-                            <div className="w-full h-full bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center text-white text-[8px] font-bold">
-                              {p.name[0]}
+                      {/* Horizontal scrollable service cards */}
+                      <div className="flex gap-2 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
+                        {(filteredGigs.length > 0 ? filteredGigs : [
+                          { id:'ph1', title:'Brand Identity & Logo Design', image:'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=400', startingPrice:500000, rating:4.8 },
+                          { id:'ph2', title:'Next.js Web Application', image:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=400', startingPrice:1000000, rating:4.9 },
+                          { id:'ph3', title:'Motion Graphics & Video', image:'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=400', startingPrice:250000, rating:5.0 },
+                          { id:'ph4', title:'Swahili Translation', image:'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=400', startingPrice:10000, rating:4.7 },
+                        ] as any[]).slice(0, 5).map((gig: any) => (
+                          <Link to={gig.id.startsWith('ph') ? '/services' : `/gig/${gig.id}`} key={gig.id} className="flex-shrink-0 w-[72px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm block hover:shadow-md transition">
+                            {/* Service thumbnail */}
+                            <div className="w-full h-[52px] overflow-hidden relative">
+                              <img
+                                src={gig.image}
+                                alt={gig.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587440871875-191322ee64b0?auto=format&fit=crop&q=80&w=400';
+                                }}
+                              />
+                              {/* Price badge */}
+                              <div className="absolute bottom-0.5 left-0.5 bg-[#0d4f47] text-white text-[4.5px] font-black px-1 py-0.5 rounded-full leading-none">
+                                From UGX {(gig.startingPrice / 1000).toFixed(0)}k
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[8px] font-bold text-slate-900 truncate">{p.name}</p>
-                            <p className="text-[6.5px] text-slate-500 truncate">{p.role}</p>
-                            <p className="text-[6px] text-slate-400 flex items-center gap-0.5">
-                              <svg className="w-1.5 h-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                              {p.loc}
-                            </p>
-                          </div>
-                          <svg className="w-3 h-3 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                      ))}
+                            {/* Card info */}
+                            <div className="px-1 py-1">
+                              <p className="text-[5.5px] font-bold text-slate-800 leading-tight line-clamp-2 mb-0.5">{gig.title}</p>
+                              <div className="flex items-center gap-0.5">
+                                <svg className="w-1.5 h-1.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <span className="text-[4.5px] font-semibold text-slate-600">{gig.rating?.toFixed(1)}</span>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Bottom nav */}
                     <div className="bg-white border-t border-gray-100 flex items-center justify-around px-2 py-1.5">
                       {[
-                        { icon: '🏠', label: 'Home', active: true },
-                        { icon: '🔧', label: 'Services', active: false },
-                        { icon: '👥', label: 'Providers', active: false },
-                        { icon: '→', label: 'Sign in', active: false },
+                        { icon: <Home className="w-3 h-3" />, label: 'Home', path: '/' },
+                        { icon: <Wrench className="w-3 h-3" />, label: 'Services', path: '/services' },
+                        { icon: <Users className="w-3 h-3" />, label: 'Providers', path: '/providers' },
+                        { icon: <LogIn className="w-3 h-3" />, label: 'Sign in', path: '/join' },
                       ].map(n => (
-                        <div key={n.label} className="flex flex-col items-center gap-0.5">
-                          <span className="text-[10px]">{n.icon}</span>
-                          <span className={`text-[5.5px] font-semibold ${n.active ? 'text-[#0d4f47]' : 'text-slate-400'}`}>{n.label}</span>
-                        </div>
+                        <Link to={n.path} key={n.label} className="flex flex-col items-center gap-0.5 hover:text-[#0d4f47] transition">
+                          <span className={n.path === '/' ? 'text-[#0d4f47]' : 'text-slate-400'}>{n.icon}</span>
+                          <span className={`text-[5.5px] font-semibold ${n.path === '/' ? 'text-[#0d4f47]' : 'text-slate-400'}`}>{n.label}</span>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -501,14 +579,18 @@ export const LandingHome: React.FC = () => {
         </div>
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
           {[
-            { title: 'Discover', desc: 'Browse services or search providers near you.', icon: '🔍' },
-            { title: 'Request', desc: 'Message the provider or request a booking.', icon: '💬' },
-            { title: 'Pay securely', desc: 'Pay safely. Funds are held until the job is done.', icon: '🛡️' },
-            { title: 'Confirm', desc: 'Mark the work complete and the provider gets paid.', icon: '✅' }
+            { title: 'Discover', desc: 'Browse services or search providers near you.', icon: <SearchCheck className="w-7 h-7 text-primary-600" />, color: 'bg-primary-50 border-primary-100' },
+            { title: 'Request', desc: 'Message the provider or request a booking.', icon: <MessageCircle className="w-7 h-7 text-sky-600" />, color: 'bg-sky-50 border-sky-100' },
+            { title: 'Pay Securely', desc: 'Pay safely. Funds are held until the job is done.', icon: <Shield className="w-7 h-7 text-emerald-600" />, color: 'bg-emerald-50 border-emerald-100' },
+            { title: 'Confirm', desc: 'Mark the work complete and the provider gets paid.', icon: <CheckSquare className="w-7 h-7 text-violet-600" />, color: 'bg-violet-50 border-violet-100' },
           ].map((step, idx) => (
-            <div key={idx} className="text-center flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-2xl mb-4 shadow-sm">
-                {step.icon}
+            <div key={idx} className="text-center flex flex-col items-center group">
+              {/* Step number connector */}
+              <div className="relative mb-5">
+                <div className={`w-16 h-16 rounded-2xl ${step.color} border-2 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow`}>
+                  {step.icon}
+                </div>
+                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center">{idx + 1}</span>
               </div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">{step.title}</h3>
               <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
@@ -525,9 +607,9 @@ export const LandingHome: React.FC = () => {
             <p className="text-white/70 text-lg mb-6 max-w-md">Join Kazify and start connecting with clients today. Post unlimited services and get paid securely.</p>
           </div>
           <div className="flex-shrink-0">
-            <button className="bg-white text-primary-900 font-bold px-8 py-4 rounded-xl shadow-lg hover:bg-slate-50 transition transform hover:scale-105 flex items-center gap-2">
+            <Link to="/join" className="inline-flex bg-white text-primary-900 font-bold px-8 py-4 rounded-xl shadow-lg hover:bg-slate-50 transition transform hover:scale-105 items-center gap-2">
               Join as a provider <ArrowRight className="w-5 h-5" />
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -549,7 +631,7 @@ export const LandingHome: React.FC = () => {
               </h2>
               
               <p className="text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Are you a high school student with a passion for tech or design? Join our gamified learning arena to develop high-income skills, complete real-world challenges, and build a portfolio before you even graduate.
+                Are you an ambitious youth with a passion for tech, creative arts, business, or professional services? Join our learning arena to develop high-income skills, complete real-world challenges, and build a professional portfolio to launch your career.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
@@ -654,7 +736,7 @@ export const LandingHome: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <h2 className="text-3xl sm:text-4xl font-black font-display tracking-tight leading-tight">
-                Why high schoolers are choosing Kazify Academy
+                Why youth are choosing Kazify Academy
               </h2>
               <ul className="space-y-6">
                 <li className="flex items-start gap-4">
@@ -684,12 +766,12 @@ export const LandingHome: React.FC = () => {
             <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
               <div className="text-center space-y-6">
                 <h3 className="text-2xl font-bold font-display text-white">Ready to level up?</h3>
-                <p className="text-slate-400 text-sm">Create your student profile today and gain access to the Academy Arena.</p>
+                <p className="text-slate-400 text-sm">Create your profile today and gain access to the Academy Arena.</p>
                 <Link
                   to="/join"
                   className="block w-full bg-white hover:bg-slate-100 text-slate-900 font-bold px-6 py-4 rounded-xl transition text-lg shadow-xl"
                 >
-                  Create Student Account
+                  Create Free Account
                 </Link>
                 <p className="text-xs text-slate-500 pt-2">Requires no credit card or commitment.</p>
               </div>

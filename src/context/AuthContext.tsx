@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // New Google user — no profile yet, set temporary state so onboarding can finish setup
           const googleUser = session.user;
           const pendingRole = (localStorage.getItem('kazify_pending_role') || 'client') as User['role'];
-          const pendingCountry = localStorage.getItem('kazify_pending_country') || 'Kenya 🇰🇪';
+          const pendingCountry = localStorage.getItem('kazify_pending_country') || 'Uganda 🇺🇬';
 
           setCurrentUser({
             id: googleUser.id,

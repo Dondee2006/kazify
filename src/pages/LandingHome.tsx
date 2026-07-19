@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { useAuth } from '../context/AuthContext';
 import { GigCard } from '../components/GigCard';
-import { ShoutoutCard } from '../components/ShoutoutCard';
-import { Search, PlusCircle, Zap, ShieldCheck, Flame, ArrowUpRight, ChevronLeft, ChevronRight, Star, MapPin, CheckCircle, Sparkles, Target, Trophy, Briefcase, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Search, Sparkles, Target, Trophy, Briefcase, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // ── Slideshow data: one entry per slide ──────────────────────────────────────
@@ -67,11 +66,10 @@ const SLIDES = [
 ];
 
 export const LandingHome: React.FC = () => {
-  const { filteredGigs, shoutouts, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, addShoutout } = useMarketplace();
+  const { filteredGigs, searchQuery, setSearchQuery, addShoutout } = useMarketplace();
   const { currentUser, allUsers } = useAuth();
   
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused]           = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [shoutoutTitle, setShoutoutTitle] = useState('');
   const [shoutoutDesc, setShoutoutDesc]   = useState('');
@@ -79,20 +77,15 @@ export const LandingHome: React.FC = () => {
   const [shoutoutTime, setShoutoutTime]   = useState(3);
   const [shoutoutCat, setShoutoutCat]     = useState<'Graphics & Design' | 'Programming & IT' | 'Writing & Translation' | 'Video & Animation'>('Programming & IT');
 
-  const popularTags = ['Logo Design', 'Next.js', 'Swahili Localization', 'Video Explainer'];
-
   const nextSlide = useCallback(() =>
     setCurrentSlide(s => (s + 1) % SLIDES.length), []);
-  const prevSlide = useCallback(() =>
-    setCurrentSlide(s => (s - 1 + SLIDES.length) % SLIDES.length), []);
   const goToSlide = useCallback((i: number) => setCurrentSlide(i), []);
 
-  // Auto-advance every 5 s, pauses on hover
+  // Auto-advance every 5 s
   useEffect(() => {
-    if (isPaused) return;
     const t = setInterval(nextSlide, 5000);
     return () => clearInterval(t);
-  }, [isPaused, nextSlide]);
+  }, [nextSlide]);
 
   const handlePostShoutout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,10 +96,6 @@ export const LandingHome: React.FC = () => {
     setShoutoutBudget(100);
     setShoutoutTime(3);
     setShowPostModal(false);
-  };
-
-  const handlePopularTagClick = (tag: string) => {
-    setSearchQuery(tag);
   };
 
 

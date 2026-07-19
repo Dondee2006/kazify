@@ -4,17 +4,16 @@ import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { 
   DollarSign, Briefcase, Mail, Clock, CheckCircle2, 
-  MessageSquare, Calendar as CalendarIcon, Activity, 
-  Search, ExternalLink, Settings, Wallet, Compass, 
-  Send, Paperclip, Smile, Mic, FileText, Download, Share2, 
-  Bookmark, Check, User, ArrowRight, Star, AlertCircle, PlusCircle
+  MessageSquare, Activity, Search, Wallet, Compass, 
+  Send, Paperclip, Smile, Mic, Share2, Bookmark, Star, 
+  AlertCircle, PlusCircle
 } from 'lucide-react';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 export const FreelancerJobs: React.FC = () => {
-  const { shoutouts, gigs, addGig, bids, addBid } = useMarketplace();
+  const { shoutouts, gigs, addGig, bids, placeBid } = useMarketplace();
   const { currentUser, allUsers } = useAuth();
-  const { conversations, activeConversation, setActiveConversation, sendMessage } = useChat();
+  const { conversations, activeChatUserId, setActiveChatUserId, sendMessage, messages } = useChat();
 
   // Navigation tab state: 'dashboard' | 'find_jobs' | 'messages' | 'wallet'
   const [activeTab, setActiveTab] = useState<'dashboard' | 'find_jobs' | 'messages' | 'wallet'>('dashboard');
@@ -71,20 +70,23 @@ export const FreelancerJobs: React.FC = () => {
     setShowGigModal(false);
   };
 
-  const handleApplySubmit = (e: React.FormEvent) => {
+  const handleApplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedJobId || !currentUser) return;
-    addBid(selectedJobId, applyBidAmount, applyBidDays, currentUser.id, applyProposal);
-    setShowApplyModal(false);
-    setApplyProposal('');
-    // Switch to active jobs or show success
-    alert('Proposal submitted successfully!');
+    try {
+      await placeBid(selectedJobId, currentUser.id, applyBidAmount, applyBidDays, applyProposal);
+      setShowApplyModal(false);
+      setApplyProposal('');
+      alert('Proposal submitted successfully!');
+    } catch (err: any) {
+      alert('Failed to submit proposal: ' + err.message);
+    }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!typedMessage.trim() || !activeConversation) return;
-    sendMessage(activeConversation.id, typedMessage.trim());
+    if (!typedMessage.trim() || !activeChatUserId) return;
+    await sendMessage(activeChatUserId, typedMessage.trim());
     setTypedMessage('');
   };
 
@@ -126,6 +128,39 @@ export const FreelancerJobs: React.FC = () => {
   });
 
   const selectedJob = shoutouts.find(j => j.id === selectedJobId) || shoutouts[0];
+
+  // Derived chat details
+  const activeParticipant = allUsers.find(u => u.id === activeChatUserId) || null;
+  const activeMessages = messages.filter(m => 
+    (m.senderId === currentUser.id && m.receiverId === activeChatUserId) ||
+    (m.senderId === activeChatUserId && m.receiverId === currentUser.id)
+  );
+
+  // Filtered direct message list based on search
+  const filteredConversations = conversations.filter(conv => {
+    const participant = allUsers.find(u => u.id === conv.userId);
+    return !chatSearch || (participant?.name.toLowerCase().includes(chatSearch.toLowerCase()));
+  });
+
+  // Calendar dates
+  const daysInMonth = 31;
+  const today = new Date().getDate();
+
+  // Stats
+  const stats = {
+    totalEarnings: 'UGX 1,750,000',
+    pendingPayments: 'UGX 350,000',
+    activeJobsCount: 2,
+    invitationsCount: 2,
+    profileScore: 85,
+    rating: 4.9,
+  };
+
+  // Get active bids for user
+  const activeBids = bids.filter(b => b.freelancerId === currentUser.id);
+
+  // Get own gigs
+  const ownGigs = gigs.filter(g => g.freelancerId === currentUser.id);
 
   return (
     <div className="flex-1 bg-slate-50 min-h-screen flex flex-col lg:flex-row">
@@ -310,7 +345,7 @@ export const FreelancerJobs: React.FC = () => {
                       {shoutouts.slice(0, 3).map((job) => (
                         <div key={job.id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                           <div>
-                            <span className="text-[9px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{job.category}</span>
+                            <span className="text-[9px] bg-slate-100 text-slate-650 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{job.category}</span>
                             <h4 className="text-sm font-bold text-slate-850 mt-1">{job.title}</h4>
                             <p className="text-xs text-slate-400">Budget: UGX {job.budget}</p>
                           </div>
@@ -322,6 +357,40 @@ export const FreelancerJobs: React.FC = () => {
                           </button>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Active Proposals / Gigs Widget (utilizing bids and gigs contexts) */}
+                  <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
+                    <div className="border-b border-gray-150 px-6 py-4">
+                      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">My Active Gigs & Proposals</h3>
+                    </div>
+                    <div className="p-6 divide-y divide-gray-100">
+                      {activeBids.length > 0 ? (
+                        activeBids.slice(0, 2).map((bid) => (
+                          <div key={bid.id} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between">
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-850">Proposal bid for Shoutout #{bid.shoutoutId}</h4>
+                              <p className="text-[10px] text-slate-400 mt-0.5">Offered Amount: UGX {bid.amount} • Timeline: {bid.deliveryTime} days</p>
+                            </div>
+                            <span className="text-[9px] uppercase font-bold bg-amber-55 text-amber-700 px-2 py-0.5 rounded">
+                              {bid.status}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        ownGigs.slice(0, 2).map((g) => (
+                          <div key={g.id} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between">
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-850">{g.title}</h4>
+                              <p className="text-[10px] text-slate-400 mt-0.5">Price: UGX {g.startingPrice} • Category: {g.category}</p>
+                            </div>
+                            <span className="text-[9px] uppercase font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded">
+                              Active Gig
+                            </span>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -376,7 +445,7 @@ export const FreelancerJobs: React.FC = () => {
                       <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
                     </div>
                     <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium">
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
                         <div 
                           key={day} 
                           className={`py-1 rounded ${
@@ -492,7 +561,7 @@ export const FreelancerJobs: React.FC = () => {
               {/* Middle Feed List */}
               <section className="flex-1 bg-white border-r border-gray-200/80 flex flex-col overflow-y-auto">
                 <div className="p-6 border-b border-gray-150 flex items-center justify-between shrink-0">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Available Jobs ({filteredJobs.length})</h3>
+                  <h3 className="text-sm font-bold text-slate-850 uppercase tracking-wider">Available Jobs ({filteredJobs.length})</h3>
                 </div>
 
                 <div className="divide-y divide-gray-100 flex-1">
@@ -507,7 +576,7 @@ export const FreelancerJobs: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[9px] bg-slate-100 text-slate-650 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{job.category}</span>
+                          <span className="text-[9px] bg-slate-100 text-slate-655 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{job.category}</span>
                           <span className="text-xs font-bold text-slate-800">UGX {job.budget}</span>
                         </div>
                         <h4 className="text-sm font-bold text-slate-900 mb-1.5 leading-snug">{job.title}</h4>
@@ -652,17 +721,18 @@ export const FreelancerJobs: React.FC = () => {
                   <div>
                     <span className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Direct Messages</span>
                     <div className="space-y-0.5 text-xs">
-                      {conversations.map(conv => {
-                        const isActive = activeConversation?.id === conv.id;
+                      {filteredConversations.map(conv => {
+                        const participant = allUsers.find(u => u.id === conv.userId) || { name: 'Client', avatar: '' };
+                        const isActive = activeChatUserId === conv.userId;
                         return (
                           <div
-                            key={conv.id}
-                            onClick={() => setActiveConversation(conv)}
+                            key={conv.userId}
+                            onClick={() => setActiveChatUserId(conv.userId)}
                             className={`px-4 py-2 flex items-center justify-between cursor-pointer transition ${
                               isActive ? 'bg-[#0d4f47]/30 text-white font-bold border-l-4 border-[#0d9488]' : 'hover:bg-slate-800 text-slate-400'
                             }`}
                           >
-                            <span className="truncate">{conv.participantName}</span>
+                            <span className="truncate">{participant.name}</span>
                             <span className="w-2 h-2 rounded-full bg-green-400 shrink-0 ml-1.5" />
                           </div>
                         );
@@ -674,13 +744,13 @@ export const FreelancerJobs: React.FC = () => {
 
               {/* Chat Area */}
               <section className="flex-1 bg-white flex flex-col overflow-hidden">
-                {activeConversation ? (
+                {activeChatUserId && activeParticipant ? (
                   <>
                     {/* Chat Header */}
                     <div className="px-6 py-4 border-b border-gray-150 flex items-center justify-between shrink-0 bg-slate-50/50">
                       <div>
                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                          {activeConversation.participantName}
+                          {activeParticipant.name}
                           <span className="w-2 h-2 rounded-full bg-green-400" />
                         </h3>
                         <p className="text-[10px] text-slate-400 leading-tight">Vetted Buyer • Response time: under 1h</p>
@@ -689,19 +759,19 @@ export const FreelancerJobs: React.FC = () => {
 
                     {/* Messages pane */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                      {activeConversation.messages.map((m, idx) => {
+                      {activeMessages.map((m, idx) => {
                         const isMe = m.senderId === currentUser.id;
                         return (
                           <div key={idx} className={`flex items-start gap-3 max-w-xl ${isMe ? 'ml-auto flex-row-reverse' : ''}`}>
                             <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold text-[#0d4f47]">
-                              {isMe ? 'M' : activeConversation.participantName[0]}
+                              {isMe ? 'M' : activeParticipant.name[0]}
                             </div>
                             <div className={`p-3 rounded-2xl text-sm ${
                               isMe ? 'bg-[#0d4f47] text-white rounded-tr-none' : 'bg-slate-100 text-slate-800 rounded-tl-none'
                             }`}>
-                              <p className="leading-relaxed">{m.text}</p>
+                              <p className="leading-relaxed">{m.content}</p>
                               <span className={`text-[8.5px] mt-1 block text-right ${isMe ? 'text-teal-200' : 'text-slate-400'}`}>
-                                {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
                           </div>
@@ -715,7 +785,7 @@ export const FreelancerJobs: React.FC = () => {
                         <textarea
                           value={typedMessage}
                           onChange={(e) => setTypedMessage(e.target.value)}
-                          placeholder={`Message ${activeConversation.participantName}...`}
+                          placeholder={`Message ${activeParticipant.name}...`}
                           className="w-full px-4 py-3 text-sm focus:outline-none resize-none text-slate-800"
                           rows={2}
                           onKeyDown={(e) => {
@@ -792,7 +862,7 @@ export const FreelancerJobs: React.FC = () => {
                           <h4 className="text-xs font-bold text-slate-800">{tx.job}</h4>
                           <span className="text-[10px] text-slate-450">{tx.date} • {tx.type}</span>
                         </div>
-                        <span className={`text-sm font-bold ${tx.amount.startsWith('-') ? 'text-slate-600' : 'text-emerald-600'}`}>
+                        <span className={`text-sm font-bold ${tx.amount.startsWith('-') ? 'text-slate-650' : 'text-emerald-600'}`}>
                           {tx.amount}
                         </span>
                       </div>
@@ -1021,7 +1091,7 @@ export const FreelancerJobs: React.FC = () => {
                 <select
                   value={gigCat}
                   onChange={(e) => setGigCat(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0d4f47] text-slate-850"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0d4f47] text-slate-855"
                 >
                   <option value="Graphics & Design">Graphics & Design</option>
                   <option value="Programming & IT">Programming & IT</option>

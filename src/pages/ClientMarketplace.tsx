@@ -5,7 +5,7 @@ import { GigCard } from '../components/GigCard';
 import { Search, SlidersHorizontal, ChevronDown, PlusCircle, X } from 'lucide-react';
 
 export const ClientMarketplace: React.FC = () => {
-  const { filteredGigs, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, addShoutout, gigs } = useMarketplace();
+  const { filteredGigs, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, addShoutout } = useMarketplace();
   const { currentUser } = useAuth();
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
